@@ -1,0 +1,126 @@
+<div class="p-6 h-full flex flex-col space-y-4">
+  <div class="flex justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+        <i class="fa-solid fa-heart-pulse text-red-500"></i>
+        Actividades de Cardio
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Gestiona los tipos de cardio, HIIT y quema de Kcal</p>
+    </div>
+    <p-button label="Nueva Actividad" icon="fa-solid fa-plus" (onClick)="openNew()" severity="info"></p-button>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
+    <p-table 
+      [value]="cardios()" 
+      [loading]="loading()"
+      [paginator]="true" 
+      [rows]="10" 
+      [showCurrentPageReport]="true"
+      [alwaysShowPaginator]="true"
+      currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} elementos"
+      class="flex-1 flex flex-col h-full min-h-0 w-full"
+      styleClass="p-datatable-sm p-datatable-flex-bottom"
+      responsiveLayout="scroll">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Etiqueta / Nombre</th>
+          <th>Tipo (Máquina)</th>
+          <th>Kcal / min</th>
+          <th>Instrucciones Especiales</th>
+          <th class="w-32 text-center">Acciones</th>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="body" let-cardio>
+        <tr>
+          <td class="font-medium text-gray-800 dark:text-gray-200">{{ cardio.label }}</td>
+          <td>
+            <span class="text-xs font-semibold text-gray-600 bg-gray-100 dark:bg-gray-800 dark:text-gray-300 px-2 py-1 rounded-md uppercase tracking-wide">
+              {{ cardio.type }}
+            </span>
+          </td>
+          <td><span class="font-mono text-blue-600 dark:text-blue-400 font-bold">{{ cardio.kcalMin }}</span> <span class="text-xs text-gray-400">kcal</span></td>
+          <td>
+            <span class="text-sm text-gray-500 font-medium bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
+              {{ cardio.instrucciones?.length || 0 }} parámetros
+            </span>
+          </td>
+          <td>
+            <div class="flex justify-center gap-1">
+              <p-button icon="fa-solid fa-pen" [rounded]="true" [text]="true" severity="info" (onClick)="editCardio(cardio)"></p-button>
+              <p-button icon="fa-solid fa-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteCardio(cardio)"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center p-8 text-gray-500">
+            <i class="fa-solid fa-wind text-4xl mb-4 text-gray-300 dark:text-gray-700 block"></i>
+            No hay actividades registradas en la base de datos.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-dialog 
+  [(visible)]="showDialog" 
+  [header]="isEditing() ? 'Editar Cardio' : 'Nueva Actividad'" 
+  [modal]="true" 
+  [style]="{ width: '450px' }" 
+  styleClass="p-fluid shadow-xl"
+  (onHide)="closeDialog()">
+  
+  <form [formGroup]="cardioForm" class="flex flex-col gap-5 mt-3">
+    
+    <div class="flex flex-col gap-2">
+      <label for="label" class="font-semibold text-gray-700 dark:text-gray-300">Nombre Variante</label>
+      <input pInputText id="label" formControlName="label" placeholder="Ej: Cinta HIIT 20min" autofocus />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label for="type" class="font-semibold text-gray-700 dark:text-gray-300">Máquina</label>
+        <p-select id="type" formControlName="type" [options]="typeOptions" optionLabel="label" optionValue="value" placeholder="Selecciona..." appendTo="body"></p-select>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="kcalMin" class="font-semibold text-gray-700 dark:text-gray-300">Kcal / Minuto</label>
+        <p-inputNumber id="kcalMin" formControlName="kcalMin" [min]="1" [max]="50" suffix=" kcal"></p-inputNumber>
+      </div>
+    </div>
+
+    <!-- FIELDSET DE INSTRUCCIONES FORM ARRAY -->
+    <div class="mt-2 border-t border-gray-100 dark:border-gray-800 pt-4" formArrayName="instrucciones">
+      <div class="flex justify-between items-center mb-3">
+        <label class="font-semibold text-gray-700 dark:text-gray-300">Parámetros Adicionales</label>
+        <p-button icon="fa-solid fa-plus" label="Añadir" [text]="true" size="small" (onClick)="addInstruction()"></p-button>
+      </div>
+      
+      @for (item of instruccionesFormArray.controls; track $index) {
+        <div class="flex gap-2 mb-2 items-center" [formGroupName]="$index">
+          <input pInputText formControlName="label" placeholder="Ej: Inclinación" class="flex-1 p-inputtext-sm" />
+          <input pInputText formControlName="valor" placeholder="Ej: 8%" class="flex-1 p-inputtext-sm" />
+          <p-button icon="fa-solid fa-xmark" [text]="true" severity="danger" (onClick)="removeInstruction($index)"></p-button>
+        </div>
+      }
+      @if (instruccionesFormArray.controls.length === 0) {
+        <p class="text-sm text-gray-500 italic text-center py-2 bg-gray-50 dark:bg-gray-800 rounded-md">Sin parámetros configurados.</p>
+      }
+    </div>
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" icon="fa-solid fa-xmark" [outlined]="true" severity="danger" (onClick)="closeDialog()"></p-button>
+    <p-button label="Guardar" icon="fa-solid fa-check" severity="info" [loading]="saving()" (onClick)="saveCardio()"></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>

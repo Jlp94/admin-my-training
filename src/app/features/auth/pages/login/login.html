@@ -1,0 +1,69 @@
+<div class="min-h-screen bg-blue-500 flex items-center justify-center px-4">
+  <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="bg-white rounded-2xl shadow-xl w-full max-w-xl p-8 flex flex-col gap-8">
+
+    <!-- Logo y título -->
+    <div class="flex flex-col items-center gap-3">
+      <img src="/images/logo.png" alt="MyTraining" class="h-30 w-auto rounded-full" />
+      <div class="flex flex-col items-center gap-1">
+        <h1 class="text-2xl font-bold text-gray-900 text-center">MyTraining Admin</h1>
+        <p class="text-sm text-gray-500 text-center">Panel de administración</p>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="flex flex-col gap-5 w-full">
+      <div class="flex flex-col gap-2 w-full">
+        <label for="email" class="text-sm font-medium text-gray-700">Correo electrónico</label>
+        <input
+          pInputText
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="admin@ejemplo.com"
+          class="w-full"
+          [class.ng-dirty]="isInvalid('email')"
+          [class.ng-invalid]="isInvalid('email')"
+        />
+        @if (isInvalid('email')) {
+          <small class="text-red-500">Introduce un correo electrónico válido.</small>
+        }
+      </div>
+
+      <div class="flex flex-col gap-2 w-full">
+        <label for="password" class="text-sm font-medium text-gray-700">Contraseña</label>
+        <p-password
+          id="password"
+          formControlName="password"
+          [feedback]="false"
+          [toggleMask]="true"
+          styleClass="w-full"
+          inputStyleClass="w-full"
+          placeholder="••••••••"
+          [class.ng-dirty]="isInvalid('password')"
+          [class.ng-invalid]="isInvalid('password')"
+        />
+        @if (isInvalid('password')) {
+          <small class="text-red-500">La contraseña es obligatoria (mínimo 6 caracteres).</small>
+        }
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <p-checkbox id="rememberMe" formControlName="rememberMe" [binary]="true" />
+          <label for="rememberMe" class="text-sm text-gray-600 cursor-pointer">Recordarme</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón -->
+    <p-button
+      type="submit"
+      label="Iniciar sesión"
+      severity="info"
+      icon="pi pi-sign-in"
+      styleClass="w-full"
+      [loading]="loading()"
+    />
+
+  </form>
+</div>

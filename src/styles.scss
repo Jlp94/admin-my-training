@@ -1,0 +1,19 @@
+/* Estilos SCSS globales adicionales */
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+/* Forzar que el paginador de PrimeNG quede siempre abajo en las tarjetas con flex */
+.p-datatable-flex-bottom {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+
+  .p-datatable-wrapper {
+    flex: 1 1 auto !important;
+  }
+
+  .p-paginator, .p-paginator-bottom {
+    margin-top: auto !important;
+  }
+}
