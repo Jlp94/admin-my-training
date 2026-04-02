@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
@@ -18,9 +17,8 @@ import { Exercise, EquipmentType, MuscleGroup, MovementType } from '../../domain
 
 @Component({
   selector: 'app-exercise-list',
-  standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, TableModule, ButtonModule,
+    ReactiveFormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, TextareaModule, MultiSelectModule,
     SelectModule, ToastModule, ConfirmDialogModule, TagModule
   ],
@@ -64,16 +62,13 @@ export class ExerciseList implements OnInit {
 
   loadExercises() {
     this.loading.set(true);
-    console.log('[ExerciseList] Pidiendo ejercicios a:', this.exerciseService['base']);
     this.exerciseService.findAll().subscribe({
       next: (data) => {
-        console.log('[ExerciseList] Respuesta exitosa del API. Datos recibidos:', data);
-        this.exercises.set(data || []);
+        this.exercises.set(data ?? []);
         this.loading.set(false);
       },
-      error: (err) => {
-        console.error('[ExerciseList] Error del API al pedir ejercicios:', err);
-        this.messageService.add({ severity: 'error', summary: 'Error de Red/API', detail: 'Fallo al cargar ejercicios desde el servidor.' });
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los ejercicios' });
         this.loading.set(false);
       }
     });
@@ -162,16 +157,16 @@ export class ExerciseList implements OnInit {
     this.saving.set(false);
   }
 
-  getSeverity(category: string):'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' | undefined | null{
-    const map: Record<string, any> = {
-      'core': 'warning',
+  getSeverity(category: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+    const severityMap: Record<string, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
+      'core': 'warn',
       'pectoral': 'danger',
       'espalda': 'info',
       'cuádriceps': 'success',
       'femoral': 'success',
       'glúteo': 'success',
-      'hombro': 'warning'
+      'hombro': 'warn'
     };
-    return map[category] || 'secondary';
+    return severityMap[category] ?? 'secondary';
   }
 }

@@ -37,24 +37,17 @@ export class Login {
   onLogin() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      console.warn('[LOGIN] Formulario inválido', this.loginForm.errors);
       return;
     }
 
     const { email, password } = this.loginForm.value;
-    console.log('[LOGIN] Iniciando sesión con:', email);
-    
     this.loading.set(true);
 
     this.auth.login(email!, password!).subscribe({
-      next: (res) => {
-        console.log('[LOGIN] ✅ Login exitoso:', res);
+      next: () => {
         this.router.navigate(['/dashboard']);
       },
-      error: (err) => {
-        console.error('[LOGIN] Error en login:', err);
-        console.error('[LOGIN] Status:', err.status);
-        console.error('[LOGIN] Mensaje:', err.error);
+      error: () => {
         this.loading.set(false);
       }
     });

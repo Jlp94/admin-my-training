@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { IDiet, Diet } from '../domain/diet.model';
+import { Diet } from '../domain/diet.model';
 import { ApiResponse } from '../../../shared/models/api-response.model';
 
 @Injectable({ providedIn: 'root' })
@@ -11,14 +11,14 @@ export class DietService {
   private readonly base = `${environment.apiUrl}/diets`;
 
   findAll(): Observable<Diet[]> {
-    return this.http.get<ApiResponse<IDiet[]>>(this.base).pipe(
-      map(res => res.data.map(d => new Diet(d)))
+    return this.http.get<ApiResponse<Diet[]>>(this.base).pipe(
+      map(response => response.data)
     );
   }
 
   findOne(id: string): Observable<Diet> {
-    return this.http.get<ApiResponse<IDiet>>(`${this.base}/${id}`).pipe(
-      map(res => new Diet(res.data))
+    return this.http.get<ApiResponse<Diet>>(`${this.base}/${id}`).pipe(
+      map(response => response.data)
     );
   }
 

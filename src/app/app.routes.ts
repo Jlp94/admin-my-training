@@ -7,6 +7,7 @@ import { Dashboard } from './features/home/pages/dashboard/dashboard';
 import { UserList } from './features/users/pages/user-list/user-list';
 import { UserDetail } from './features/users/pages/user-detail/user-detail';
 import { RoutineList } from './features/training/pages/routine-list/routine-list';
+import { RoutineEdit } from './features/training/pages/routine-edit/routine-edit';
 import { ExerciseList } from './features/training/pages/exercise-list/exercise-list';
 import { CardioList } from './features/training/pages/cardio-list/cardio-list';
 import { Shell } from './shared/components/shell/shell';
@@ -38,6 +39,8 @@ export const routes: Routes = [
         path: 'training',
         children: [
           { path: 'routines', component: RoutineList },
+          { path: 'routines/new', component: RoutineEdit },
+          { path: 'routines/edit/:id', component: RoutineEdit },
           { path: 'exercises', component: ExerciseList },
           { path: 'cardio', component: CardioList }
         ]

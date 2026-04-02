@@ -1,5 +1,5 @@
-<div class="p-6 h-full flex flex-col space-y-4">
-  <div class="flex justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="p-6 h-full flex flex-col space-y-4 justify-center items-center">
+  <div class="flex w-7xl justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
         <i class="fa-solid fa-heart-pulse text-red-500"></i>
@@ -10,7 +10,7 @@
     <p-button label="Nueva Actividad" icon="fa-solid fa-plus" (onClick)="openNew()" severity="info"></p-button>
   </div>
 
-  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
+  <div class="bg-white w-7xl dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
     <p-table 
       [value]="cardios()" 
       [loading]="loading()"
@@ -18,6 +18,8 @@
       [rows]="10" 
       [showCurrentPageReport]="true"
       [alwaysShowPaginator]="true"
+      selectionMode="single"
+      [(selection)]="cardios"
       currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} elementos"
       class="flex-1 flex flex-col h-full min-h-0 w-full"
       styleClass="p-datatable-sm p-datatable-flex-bottom"
@@ -25,7 +27,7 @@
       
       <ng-template pTemplate="header">
         <tr>
-          <th>Etiqueta / Nombre</th>
+          <th >Etiqueta / Nombre</th>
           <th>Tipo (Máquina)</th>
           <th>Kcal / min</th>
           <th>Instrucciones Especiales</th>
@@ -72,8 +74,7 @@
   [(visible)]="showDialog" 
   [header]="isEditing() ? 'Editar Cardio' : 'Nueva Actividad'" 
   [modal]="true" 
-  [style]="{ width: '450px' }" 
-  styleClass="p-fluid shadow-xl"
+  styleClass="p-fluid shadow-xl w-[450px]"
   (onHide)="closeDialog()">
   
   <form [formGroup]="cardioForm" class="flex flex-col gap-5 mt-3">

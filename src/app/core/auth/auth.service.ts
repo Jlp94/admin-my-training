@@ -11,11 +11,12 @@ export class AuthService {
   private readonly router = inject(Router);
 
   private isValidToken(): boolean {
-    const t = localStorage.getItem('admin_token');
-    return !!t && t !== 'undefined' && t !== 'null';
+    const token = localStorage.getItem('admin_token');
+    return !!token && token !== 'undefined' && token !== 'null';
   }
 
   readonly isAuthenticated = signal(this.isValidToken());
+  readonly currentUserId = signal<string | null>(this.getUserIdFromToken());
 
   login(email: string, password: string) {
     return this.http.post<ApiResponse<{ access_token: string }>>(`${environment.apiUrl}/auth/login`, { email, password }).pipe(
@@ -23,6 +24,7 @@ export class AuthService {
         if (res.data && res.data.access_token) {
           localStorage.setItem('admin_token', res.data.access_token);
           this.isAuthenticated.set(true);
+          this.currentUserId.set(this.getUserIdFromToken());
         }
       })
     );
@@ -31,14 +33,28 @@ export class AuthService {
   logout() {
     localStorage.removeItem('admin_token');
     this.isAuthenticated.set(false);
+    this.currentUserId.set(null);
     this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
     if (!this.isValidToken()) {
       localStorage.removeItem('admin_token');
+      this.currentUserId.set(null);
       return null;
     }
     return localStorage.getItem('admin_token');
+  }
+
+  private getUserIdFromToken(): string | null {
+    const token = localStorage.getItem('admin_token');
+    if (!token || token === 'undefined') return null;
+    try {
+      // Decodificación manual del payload del JWT (segunda parte del string)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload._id || payload.sub || null; 
+    } catch (e) {
+      return null;
+    }
   }
 }

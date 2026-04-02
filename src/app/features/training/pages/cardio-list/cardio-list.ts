@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
@@ -16,9 +15,8 @@ import { Cardio, CardioType } from '../../domain/cardio.model';
 
 @Component({
   selector: 'app-cardio-list',
-  standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, TableModule, ButtonModule,
+    ReactiveFormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, InputNumberModule,
     SelectModule, ToastModule, ConfirmDialogModule
   ],

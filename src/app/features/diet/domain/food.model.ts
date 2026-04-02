@@ -21,7 +21,7 @@ export enum NutritionalType {
   VEGETAL_FIBRA = 'vegetal fibra',
 }
 
-export interface IFood {
+export interface Food {
   _id: string;
   name: string;
   brand?: string;
@@ -33,32 +33,4 @@ export interface IFood {
   kcal: number;
   createdAt?: string;
   updatedAt?: string;
-}
-
-export class Food implements IFood {
-  _id: string;
-  name: string;
-  brand?: string;
-  category: FoodGroup;
-  nutritionalType: NutritionalType;
-  carbs: number;
-  protein: number;
-  fat: number;
-  kcal: number;
-  createdAt?: string;
-  updatedAt?: string;
-
-  constructor(data: IFood) {
-    this._id = data._id;
-    this.name = data.name;
-    this.brand = data.brand;
-    this.category = data.category;
-    this.nutritionalType = data.nutritionalType;
-    this.carbs = data.carbs;
-    this.protein = data.protein;
-    this.fat = data.fat;
-    this.kcal = data.kcal;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
-  }
 }

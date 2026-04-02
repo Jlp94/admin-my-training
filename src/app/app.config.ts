@@ -4,6 +4,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { routes } from './app.routes';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 
@@ -69,6 +70,8 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: MyPreset
       }
-    })
+    }),
+    MessageService,
+    ConfirmationService
   ]
 };

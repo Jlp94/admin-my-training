@@ -1,27 +1,59 @@
-export interface IRoutine {
-  _id: string;
-  userId: string;
-  name: string;
-  days: number;
-  createdAt: string;
+export enum DayOfWeek {
+  DOMINGO = 0,
+  LUNES = 1,
+  MARTES = 2,
+  MIERCOLES = 3,
+  JUEVES = 4,
+  VIERNES = 5,
+  SABADO = 6,
 }
 
-export class Routine implements IRoutine {
+export enum ExecutionMode {
+  NORMAL = 'normal',
+  SUPER_SET = 'superset',
+  REST_PAUSE = 'restpause',
+  DROP_SET = 'dropset',
+}
+
+export interface Tempo {
+  eccentric: number;
+  isometric: number;
+  concentric: number;
+}
+
+export interface ExerciseSet {
+  kg: number;
+  reps: number;
+  rir: number;
+}
+
+export interface RoutineExercise {
+  exerciseId: string;
+  name?: string; // Enriquecido desde el backend
+  categories?: string[]; // Enriquecido desde el backend
+  rest: number;
+  executionType: ExecutionMode;
+  observations?: string;
+  restPauseSeconds?: number;
+  idExSuperSet?: string;
+  tempo: Tempo;
+  sets: ExerciseSet[];
+}
+
+export interface RoutineSession {
+  routineType: string;
+  category: string;
+  routineDayOfWeek: DayOfWeek;
+  observations?: string;
+  exercises: RoutineExercise[];
+}
+
+export interface Routine {
   _id: string;
-  userId: string;
+  userIds: string[];
   name: string;
-  days: number;
+  isActive: boolean;
+  sessions: RoutineSession[];
   createdAt: string;
-
-  constructor(data: IRoutine) {
-    this._id = data._id;
-    this.userId = data.userId;
-    this.name = data.name;
-    this.days = data.days;
-    this.createdAt = data.createdAt;
-  }
-
-  get daysLabel(): string {
-    return `${this.days} día${this.days !== 1 ? 's' : ''}`;
-  }
+  updatedAt: string;
 }

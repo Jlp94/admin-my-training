@@ -1,0 +1,237 @@
+<div class="p-6 h-full flex flex-col space-y-4 max-w-7xl mx-auto">
+  
+  <!-- CABECERA -->
+  <div class="flex justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+    <div class="flex items-center gap-4">
+      <p-button icon="fa-solid fa-arrow-left" [text]="true" severity="secondary" (onClick)="goBack()"></p-button>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 italic">
+          {{ isEditing() ? 'Editar Rutina' : 'Nueva Rutina' }}
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Configuración de microciclo de entrenamiento</p>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <p-button label="Cancelar" icon="fa-solid fa-xmark" [outlined]="true" severity="danger" (onClick)="goBack()"></p-button>
+      <p-button label="Guardar Rutina" icon="fa-solid fa-cloud-arrow-up" severity="info" [loading]="saving()" (onClick)="save()"></p-button>
+    </div>
+  </div>
+
+  <form [formGroup]="routineForm" class="space-y-6">
+    
+    <!-- DATOS GENERALES -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <div class="md:col-span-2 flex flex-col gap-2">
+        <label class="font-bold text-gray-700 dark:text-gray-300 ml-1 italic">Nombre de la Rutina</label>
+        <input pInputText fluid formControlName="name" placeholder="Ej: FullBody 3 días Avanzado" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-bold text-gray-700 dark:text-gray-300 ml-1 italic">Estado</label>
+        <div class="flex items-center h-full px-2">
+          <p-button [label]="routineForm.get('isActive')?.value ? 'ACTIVA' : 'INACTIVA'" 
+                  [severity]="routineForm.get('isActive')?.value ? 'success' : 'warn'"
+                  [text]="true"
+                  [icon]="routineForm.get('isActive')?.value ? 'fa-solid fa-toggle-on text-xl' : 'fa-solid fa-toggle-off text-xl'"
+                  (onClick)="routineForm.get('isActive')?.setValue(!routineForm.get('isActive')?.value)">
+          </p-button>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label class="font-bold text-gray-700 dark:text-gray-300 ml-1 italic">Usuarios / Clientes</label>
+        <p-multiselect appendTo="body" 
+                      fluid 
+                      formControlName="userIds" 
+                      [options]="clientOptions()" 
+                      optionLabel="label" 
+                      optionValue="value"
+                      [filter]="true"
+                      placeholder="Seleccionar clientes..." 
+                      [maxSelectedLabels]="3"
+                      />
+      </div>
+    </div>
+
+    <!-- LISTADO DE SESIONES (DÍAS) -->
+    <div formArrayName="sessions" class="space-y-8">
+      @for (session of sessions.controls; track sessionIndex; let sessionIndex = $index) {
+        <p-card [formGroupName]="sessionIndex" [id]="'session-' + sessionIndex" styleClass="shadow-lg border-t-4 border-indigo-500 overflow-hidden">
+          
+          <ng-template pTemplate="header">
+            <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <div class="flex items-center gap-4">
+                <div class="bg-indigo-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-md">
+                  {{ sessionIndex + 1 }}
+                </div>
+                <div>
+                  <span class="text-sm text-gray-500 font-bold uppercase tracking-widest italic">Sesión de Entrenamiento</span>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="font-bold text-xl text-gray-800 dark:text-gray-200">
+                      {{ session.get('routineType')?.value || 'Rutina' }}
+                    </span>
+                    <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full border border-indigo-100 font-bold">
+                      {{ session.get('category')?.value || 'Categoría...' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p-button icon="fa-solid fa-rectangle-xmark"  [text]="true" label="Eliminar Día" severity="danger" (onClick)="removeSession(sessionIndex)" pTooltip="Eliminar toda la sesión" [raised]="true"></p-button>
+            </div>
+          </ng-template>
+
+          <div class="space-y-6">
+            <!-- CONFIGURACIÓN DE LA SESIÓN -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold text-gray-500 ml-1">TIPO DE RUTINA</label>
+                <p-select [options]="routineFormService.routineTypeOptions" appendTo="body" fluid formControlName="routineType" optionLabel="label" optionValue="value" placeholder="Tipo (FullBody, Weider...)"></p-select>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold text-gray-500 ml-1">CATEGORÍA</label>
+                <p-select [options]="getCategoryOptions(sessionIndex)" appendTo="body" fluid formControlName="category" optionLabel="label" optionValue="value" placeholder="Categoría (Torso, Push, 1...)"></p-select>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold text-gray-500 ml-1">DÍA DE LA SEMANA</label>
+                <p-select [options]="routineFormService.dayOptions" appendTo="body" fluid formControlName="routineDayOfWeek" optionLabel="label" optionValue="value" placeholder="Selecciona día..."></p-select>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold text-gray-500 ml-1">OBSERVACIONES DÍA</label>
+                <textarea pTextarea fluid formControlName="observations" rows="1" [autoResize]="true" placeholder="Notas sobre el día..."></textarea>
+              </div>
+            </div>
+
+            <!-- EJERCICIOS DEL DÍA -->
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-6">
+              <div class="flex justify-between items-center mb-4 px-2">
+                <h3 class="font-bold text-lg text-gray-700 dark:text-gray-300 italic flex items-center gap-2">
+                  <i class="fa-solid fa-list-ul text-indigo-500"></i>
+                  Ejercicios Programados
+                </h3>
+              </div>
+
+              <div formArrayName="exercises" class="space-y-4">
+                @for (exGroup of getExercises(sessionIndex).controls; track exerciseIndex; let exerciseIndex = $index) {
+                  <div [formGroupName]="exerciseIndex" [id]="'exercise-' + sessionIndex + '-' + exerciseIndex" class="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 transition-colors">
+                    
+                    <!-- FILA DE SELECCIÓN Y CONFIG BÁSICA (SIMÉTRICA) -->
+                    <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
+                      <div class="flex-1 min-w-[150px] flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Buscar por Grupo</label>
+                        <p-select [options]="routineFormService.muscleGroups" appendTo="body" fluid formControlName="muscleGroup" optionLabel="label" optionValue="value" placeholder="Grupo..."></p-select>
+                      </div>
+
+                      <div class="flex-1 min-w-[200px] flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Ejercicio Seleccionado</label>
+                        <p-select [options]="getExercisesForGroup($any(exGroup).get('muscleGroup')?.value)" 
+                                formControlName="exerciseId" 
+                                fluid
+                                appendTo="body"
+                                optionLabel="name" 
+                                optionValue="_id" 
+                                [filter]="true"
+                                placeholder="Selecciona ejercicio..."
+                                >
+                        </p-select>
+                      </div>
+
+                      <div class="w-40 flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Ejecución</label>
+                        <p-select [options]="routineFormService.executionOptions" appendTo="body" fluid formControlName="executionType" optionLabel="label" optionValue="value"placeholder="Normal..."></p-select>
+                      </div>
+
+                      <div class="w-32 flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Descanso (s)</label>
+                        <p-inputNumber formControlName="rest" appendTo="body" fluid suffix=" s" [min]="0" class="inputtext-sm" inputStyleClass="text-center"></p-inputNumber>
+                      </div>
+
+                      <div class="flex items-end h-full">
+                        <p-button icon="fa-solid fa-trash-can" [text]="true" severity="danger" (onClick)="removeExerciseFromSession(sessionIndex, exerciseIndex)" pTooltip="Eliminar Ejercicio"></p-button>
+                      </div>
+                    </div>
+
+                    <!-- OBSERVACIONES Y TEMPO (ESTILO MORADITO) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1 flex items-center gap-1">
+                          <i class="fa-solid fa-comment-dots"></i>
+                          Comentario del Ejercicio
+                        </label>
+                        <textarea pTextarea fluid formControlName="observations" rows="1" [autoResize]="true" 
+                                  placeholder="Notas técnicas específicas..." 
+                                  class="text-sm border-indigo-100 focus:border-indigo-500 bg-indigo-50/10"></textarea>
+                      </div>
+                      <div formGroupName="tempo" class="flex items-center gap-4 bg-indigo-50/20 dark:bg-indigo-900/10 p-2 px-4 rounded-full border border-indigo-100 dark:border-indigo-800/30">
+                        <label class="text-[10px] font-bold text-indigo-500 uppercase italic tracking-widest">TEMPO</label>
+                        <div class="flex gap-3">
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-[8px] text-gray-500 font-bold uppercase">Excéntrica</span>
+                            <p-inputNumber formControlName="eccentric" fluid [min]="0" styleClass="w-8" inputStyleClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
+                          </div>
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-[8px] text-gray-500 font-bold uppercase">Isométrica</span>
+                            <p-inputNumber formControlName="isometric" fluid [min]="0" styleClass="w-8" inputStyleClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
+                          </div>
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-[8px] text-gray-500 font-bold uppercase">Concéntrica</span>
+                            <p-inputNumber formControlName="concentric" fluid [min]="0" styleClass="w-8" inputStyleClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- SERIES (EL SISTEMA DE GRID COMPACTO) -->
+                    <div class="mt-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                      <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest italic">Series Programadas</span>
+                        <div class="flex gap-2">
+                          <p-button icon="fa-solid fa-minus" size="small" [raised]="true" severity="secondary" (onClick)="removeLastSet($any(exGroup))" pTooltip="Quitar última serie" [disabled]="getSets($any(exGroup)).length <= 1"></p-button>
+                          <p-button label="Serie" icon="fa-solid fa-plus" size="small" [raised]="true" severity="secondary" (onClick)="addSetToExercise($any(exGroup))" pTooltip="Añadir serie"></p-button>
+                        </div>
+                      </div>
+                      
+                      <div formArrayName="sets" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                        @for (set of getSets($any(exGroup)).controls; track indexSet; let indexSet = $index) {
+                          <div [formGroupName]="indexSet" class="flex flex-col gap-1 bg-white dark:bg-gray-800 px-2 py-1.5 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 relative group">
+                            <div class="flex justify-between items-center mb-1">
+                              <span class="text-[10px] font-bold text-indigo-400">SERIE {{ indexSet + 1 }}</span>
+                              <p-button icon="fa-solid fa-xmark text-[14px]" [text]="true" severity="danger" styleClass="w-4 h-4 p-0" (onClick)="removeSetFromExercise($any(exGroup), indexSet)"></p-button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1">
+                              <div class="flex flex-col">
+                                <span class="text-[7px] font-bold text-gray-400 uppercase">KG</span>
+                                <p-inputNumber formControlName="kg" [min]="0" [showButtons]="false" [maxFractionDigits]="1" fluid inputStyleClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
+                              </div>
+                              <div class="flex flex-col">
+                                <span class="text-[7px] font-bold text-gray-400 uppercase">REPS</span>
+                                <p-inputNumber formControlName="reps" [min]="1" [showButtons]="false" fluid inputStyleClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
+                              </div>
+                              <div class="flex flex-col">
+                                <span class="text-[7px] font-bold text-gray-400 uppercase">RIR</span>
+                                <p-inputNumber formControlName="rir" [min]="0" [max]="5" [showButtons]="false" fluid inputStyleClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
+                              </div>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+                <!-- BOTÓN AÑADIR EJERCICIO AL FINAL -->
+                <div class="flex justify-center mt-6">
+                  <p-button label="Añadir Ejercicio" icon="fa-solid fa-plus" [outlined]="true" size="small" severity="info" (onClick)="addExerciseToSession($any(session))" pTooltip="Añadir nuevo ejercicio a esta sesión"></p-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      }
+    </div>
+
+    <!-- BOTONE FINAL -->
+    <div class="flex justify-center pt-8 pb-12">
+      <p-button label="Añadir Día de Entrenamiento" icon="fa-solid fa-plus" severity="secondary" [outlined]="true" size="large" (onClick)="addSession()"></p-button>
+    </div>
+
+  </form>
+</div>
+
+<p-toast position="bottom-right"></p-toast>

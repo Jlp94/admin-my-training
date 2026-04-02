@@ -1,1 +1,116 @@
-<p>routine-list works!</p>
+<div class="p-6 h-full flex flex-col space-y-4">
+  <div class="flex justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+        <i class="fa-solid fa-calendar-days text-indigo-500"></i>
+        Gestión de Rutinas
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Administra las rutinas maestras y las asignaciones de usuarios</p>
+    </div>
+    <p-button label="Nueva Rutina" icon="fa-solid fa-plus" (onClick)="goToNew()" severity="info"></p-button>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <p-table 
+      [value]="routines()" 
+      [loading]="loading()"
+      [paginator]="true" 
+      [rows]="10" 
+      dataKey="_id"
+      [rowExpandMode]="'single'"
+      (onRowExpand)="onRowExpand($event)"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} rutinas"
+      styleClass="p-datatable-sm">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th>Nombre de la Rutina</th>
+          <th>Tipo</th>
+          <th class="text-center">Días / Sesiones</th>
+          <th class="text-center">Estado</th>
+          <th class="w-40 text-center">Acciones</th>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="body" let-routine let-expanded="expanded">
+        <tr>
+          <td>
+            <p-button type="button" pRipple [pRowToggler]="routine" [text]="true" [rounded]="true" 
+                      [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></p-button>
+          </td>
+          <td class="font-semibold text-gray-700 dark:text-gray-200">{{ routine.name }}</td>
+          <td>
+            <span class="text-sm font-medium px-2 py-1 bg-indigo-50 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 rounded-md">
+              {{ getRoutineMainType(routine) }}
+            </span>
+          </td>
+          <td class="text-center">
+            <p-tag [value]="routine.sessions?.length || 0" severity="secondary"></p-tag>
+          </td>
+          <td class="text-center">
+            <p-tag [value]="routine.isActive ? 'Activa' : 'Inactiva'" 
+                   [severity]="routine.isActive ? 'success' : 'warn'"></p-tag>
+          </td>
+          <td>
+            <div class="flex justify-center gap-1">
+              <p-button icon="fa-solid fa-pen" [rounded]="true" [text]="true" severity="info" 
+                        (onClick)="editRoutine(routine)" pTooltip="Editar Rutina"></p-button>
+              <p-button icon="fa-solid fa-trash" [rounded]="true" [text]="true" severity="danger" 
+                        (onClick)="deleteRoutine(routine)" pTooltip="Eliminar Rutina"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- EXPANSIÓN: Usuarios asignados -->
+      <ng-template pTemplate="rowexpansion" let-routine>
+        <tr>
+          <td colspan="6" class="bg-gray-50/50 dark:bg-gray-800/30 p-4">
+            <div class="px-8 py-2 border-l-4 border-indigo-500 ml-4">
+              <h4 class="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-3">
+                <i class="fa-solid fa-users text-sm"></i>
+                Usuarios con esta rutina activa
+              </h4>
+              
+              @if (loadingUsers()[routine._id]) {
+                <div class="flex items-center gap-2 text-gray-400 py-2">
+                  <i class="pi pi-spin pi-spinner"></i>
+                  <span>Cargando asignaciones...</span>
+                </div>
+              } @else {
+                @if (assignedUsersMap()[routine._id]?.length) {
+                  <div class="flex flex-wrap gap-2">
+                    @for (user of assignedUsersMap()[routine._id]; track user.getId) {
+                      <div class="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 px-3 py-1.5 rounded-full shadow-sm">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
+                          {{ user.getFullName() }}
+                        </span>
+                        <span class="text-xs text-gray-400 italic">{{ user.getEmail }}</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="text-sm text-gray-500 italic py-2">Ningún usuario tiene esta rutina asignada actualmente.</p>
+                }
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center p-8 text-gray-500">
+            <i class="fa-solid fa-ghost text-4xl mb-4 text-gray-300 dark:text-gray-700 block"></i>
+            No se han creado rutinas maestras todavía.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>

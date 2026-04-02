@@ -1,5 +1,5 @@
-<div class="p-6 h-full flex flex-col space-y-4">
-  <div class="flex justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="p-6 h-full flex flex-col space-y-4 justify-center items-center">
+  <div class="flex w-7xl justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
         <i class="fa-solid fa-dumbbell text-blue-600"></i>
@@ -10,12 +10,14 @@
     <p-button label="Nuevo Ejercicio" icon="fa-solid fa-plus" (onClick)="openNew()" severity="info"></p-button>
   </div>
 
-  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
+  <div class="bg-white w-7xl dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
     <p-table 
       [value]="exercises()" 
       [loading]="loading()"
       [paginator]="true" 
       [rows]="10" 
+      selectionMode="single"
+      [(selection)]="exercises"
       [showCurrentPageReport]="true"
       [alwaysShowPaginator]="true"
       currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} ejercicios"
@@ -25,8 +27,8 @@
       
       <ng-template pTemplate="header">
         <tr>
-          <th>Nombre</th>
-          <th>Equipamiento</th>
+          <th class="w-120">Nombre</th>
+          <th class="w-70" >Equipamiento</th>
           <th>Grupos Musculares</th>
           <th class="w-32 text-center">Acciones</th>
         </tr>
@@ -72,8 +74,7 @@
   [(visible)]="showDialog" 
   [header]="isEditing() ? 'Editar Ejercicio' : 'Nuevo Ejercicio'" 
   [modal]="true" 
-  [style]="{ width: '500px' }" 
-  styleClass="p-fluid shadow-xl"
+  styleClass="p-fluid shadow-xl w-[500px]"
   (onHide)="closeDialog()">
   
   <form [formGroup]="exerciseForm" class="flex flex-col gap-5 mt-3">
@@ -110,7 +111,7 @@
 
     <div class="flex flex-col gap-2">
       <label for="vid" class="font-semibold text-gray-700 dark:text-gray-300">URL del Vídeo</label>
-      <input pInputText id="vid" formControlName="videoUrl" placeholder="Enlace a YouTube, Vimeo o MP4" />
+      <input pInputText id="vid" formControlName="videoUrl" placeholder="Enlace a YouTube" />
     </div>
   </form>
 

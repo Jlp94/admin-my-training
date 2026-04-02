@@ -1,1 +1,291 @@
-<p>user-list works!</p>
+<div class="p-6 h-full flex flex-col space-y-6 justify-center items-center">
+  <!-- Cabecera Principal -->
+  <div class="flex w-7xl justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
+        <i class="pi pi-users text-blue-500"></i>
+        Usuarios del Sistema
+      </h1>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Gestiona los clientes y administradores de la plataforma</p>
+    </div>
+    <p-button label="Nuevo Usuario" icon="pi pi-plus" (onClick)="openNew()" severity="info"></p-button>
+  </div>
+
+  <!-- SECCIÓN 1: CLIENTES -->
+  <div class="w-7xl flex-1 flex flex-col space-y-2 relative">
+    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 ml-2">
+      <i class="pi pi-heart-fill text-gray-400 mr-2"></i> Clientes
+    </h2>
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
+      <p-table 
+        [value]="facade.clients()" 
+        [loading]="facade.loading()"
+        [paginator]="true" 
+        [rows]="10" 
+        selectionMode="single"
+        [showCurrentPageReport]="true"
+        [alwaysShowPaginator]="false"
+        currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} clientes"
+        class="flex-1 flex flex-col h-full min-h-0 w-full"
+        styleClass="p-datatable-sm p-datatable-flex-bottom"
+        responsiveLayout="scroll">
+        
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="w-70"><div class="text-left ml-2">Cliente</div></th>
+            <th><div class="text-left">Email</div></th>
+            <th ><div class="text-center">Altura</div></th>
+            <th ><div class="text-center">Peso Base</div></th>
+            <th ><div class="text-center">Peso Actual</div></th>
+            <th ><div class="text-center">Activo</div></th>
+            <th ><div class="text-center">Acciones</div></th>
+          </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="body" let-user>
+          <tr>
+            <td>
+              <div class="flex items-center gap-3 ml-2">
+                @if (user.getProfile?.avatarUrl) {
+                  <img [src]="user.getProfile?.avatarUrl" class="h-10 w-10 min-w-10 rounded-full border border-gray-200 object-cover" alt="Avatar" />
+                } @else {
+                  <div class="h-10 w-10 min-w-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center font-bold text-sm tracking-wider">
+                    {{ user.getInitials() }}
+                  </div>
+                }
+                <div class="flex flex-col">
+                  <span class="font-medium text-gray-800 dark:text-gray-200">
+                    {{ user.getProfile?.name || 'Cliente' }} {{ user.getProfile?.lastName || 'Sin Nombre' }}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="text-left py-1 text-sm text-gray-500 truncate max-w-[200px]">
+                {{ user.getEmail }}
+              </div>
+            </td>
+            <td>
+              <div class="text-center text-gray-600 font-mono">
+                @if (user.getProfile?.height) {
+                  {{ user.getProfile?.height }} <span class="text-xs text-gray-400">cm</span>
+                } @else {
+                  <span class="text-gray-400">—</span>
+                }
+              </div>
+            </td>
+            <td>
+              <div class="text-center text-gray-600 font-mono">
+                @if (user.getProfile?.weight) {
+                  {{ user.getProfile?.weight }} <span class="text-xs text-gray-400">kg</span>
+                } @else {
+                  <span class="text-gray-400">—</span>
+                }
+              </div>
+            </td>
+            <td>
+              <div class="text-center font-mono">
+                @if (user.getLastWeight() !== '—') {
+                  <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ user.getLastWeight() }}</span> <span class="text-xs text-gray-400">kg</span>
+                } @else {
+                  <span class="text-gray-400">—</span>
+                }
+              </div>
+            </td>
+            <td>
+              <div class="flex justify-center items-center gap-3">
+                <p-tag [value]="user.getIsActive ? 'Activo' : 'Inactivo'" 
+                       [severity]="user.getIsActive ? 'success' : 'warn'"
+                       class="min-w-[80px] text-center"></p-tag>
+                
+                <p-button [icon]="user.getIsActive ? 'pi pi-user-minus' : 'pi pi-user-plus'" 
+                          [rounded]="true" [text]="true" 
+                          [severity]="user.getIsActive ? 'danger' : 'success'"
+                          (onClick)="facade.toggleActive(user)"
+                          [pTooltip]="user.getIsActive ? 'Desactivar Cliente' : 'Activar Cliente'"
+                          tooltipPosition="left"></p-button>
+              </div>
+            </td>
+            <td>
+              <div class="flex justify-center gap-1">
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (onClick)="editUser(user)" pTooltip="Editar" tooltipPosition="left"></p-button>
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteUser(user)" pTooltip="Eliminar" tooltipPosition="left"></p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center p-8 text-gray-500">
+              <i class="pi pi-user-minus text-4xl mb-4 text-gray-300 dark:text-gray-700 block"></i>
+              No se encontraron clientes asociados.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: ADMINISTRADORES -->
+  <div class="w-7xl flex-none flex flex-col space-y-2 mt-4">
+    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 ml-2">
+      <i class="pi pi-shield text-gray-400 mr-2"></i> Administradores
+    </h2>
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <p-table 
+        [value]="facade.admins()" 
+        [loading]="facade.loading()"
+        [rows]="5" 
+        selectionMode="single"
+        class="w-full"
+        styleClass="p-datatable-sm"
+        responsiveLayout="scroll">
+        
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="w-1/3"><div class="text-left ml-2">Nombre</div></th>
+            <th class="w-1/3"><div class="text-left">Email</div></th>
+            <th class="w-1/3"><div class="text-center">Activo</div></th>
+          </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="body" let-admin>
+          <tr>
+            <td>
+              <div class="flex items-center gap-3 ml-2">
+                <div class="h-8 w-8 min-w-8 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center font-bold text-xs tracking-wider border border-gray-200 dark:border-gray-700">
+                  {{ admin.getInitials() }}
+                </div>
+                <span class="font-medium text-gray-800 dark:text-gray-200">
+                  {{ admin.getProfile?.name || 'Administrador' }} {{ admin.getProfile?.lastName || '' }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="text-left py-1 text-sm text-gray-500">
+                {{ admin.getEmail }}
+              </div>
+            </td>
+            <td>
+              <div class="flex justify-center items-center gap-3">
+                <p-tag [value]="admin.getIsActive ? 'Activo' : 'Inactivo'" 
+                       [severity]="admin.getIsActive ? 'success' : 'warn'"
+                       class="min-w-[80px] text-center"></p-tag>
+                
+                @if (!facade.isCurrentUser(admin.getId)) {
+                  <p-button [icon]="admin.getIsActive ? 'pi pi-user-minus' : 'pi pi-user-plus'" 
+                            [rounded]="true" [text]="true" 
+                            [severity]="admin.getIsActive ? 'danger' : 'success'"
+                            (onClick)="facade.toggleActive(admin)"
+                            [pTooltip]="admin.getIsActive ? 'Desactivar Admin' : 'Activar Admin'"
+                            tooltipPosition="left"></p-button>
+                } @else {
+                   <div class="w-10"></div> <!-- Espaciador para el admin actual -->
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3" class="text-center p-6 text-gray-500">
+              <i class="pi pi-lock text-3xl mb-3 text-gray-300 dark:text-gray-700 block"></i>
+              No hay administradores registrados.
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<p-dialog 
+  [(visible)]="showDialog" 
+  [header]="isEditing() ? 'Editar Usuario' : 'Nuevo Usuario'" 
+  [modal]="true" 
+  styleClass="p-fluid shadow-xl w-[550px]"
+  (onHide)="closeDialog()">
+  
+  <form [formGroup]="userForm" class="flex flex-col gap-4 mt-3">
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label for="name" class="font-semibold text-gray-700 dark:text-gray-300">Nombre</label>
+        <input pInputText id="name" formControlName="name" placeholder="Ej: Jose" autofocus />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="lastName" class="font-semibold text-gray-700 dark:text-gray-300">Apellidos</label>
+        <input pInputText id="lastName" formControlName="lastName" placeholder="Ej: Garcia" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label for="email" class="font-semibold text-gray-700 dark:text-gray-300">Correo Electrónico *</label>
+        <input pInputText id="email" formControlName="email" type="email" placeholder="cliente@email.com" />
+        @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+          <small class="text-red-500">Un correo válido es obligatorio.</small>
+        }
+      </div>
+
+      @if (!isEditing()) {
+        <div class="flex flex-col gap-2">
+          <label for="password" class="font-semibold text-gray-700 dark:text-gray-300">Contraseña *</label>
+          <input pInputText id="password" formControlName="password" type="password" placeholder="Mín. 6 caracteres" />
+          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+            <small class="text-red-500">La contraseña debe tener al menos 6 caracteres.</small>
+          }
+        </div>
+      } @else {
+        <div class="flex flex-col gap-2">
+          <label for="role" class="font-semibold text-gray-700 dark:text-gray-300">Rol</label>
+          <p-select id="role" formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" appendTo="body"></p-select>
+        </div>
+      }
+    </div>
+
+    @if (!isEditing()) {
+      <div class="grid grid-cols-1 gap-4">
+        <div class="flex flex-col gap-2">
+          <label for="role" class="font-semibold text-gray-700 dark:text-gray-300">Rol</label>
+          <p-select id="role" formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" appendTo="body"></p-select>
+        </div>
+      </div>
+    }
+
+    <!-- Módulo de métricas -->
+    <div class="border-t border-gray-100 dark:border-gray-800 pt-4 grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-2">
+        <label for="height" class="font-semibold text-gray-700 dark:text-gray-300">Altura (cm)</label>
+        <p-inputNumber id="height" formControlName="height" [min]="0" [max]="300" suffix=" cm" placeholder="Ej: 175"></p-inputNumber>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="weight" class="font-semibold text-gray-700 dark:text-gray-300">Peso Base (kg)</label>
+        <p-inputNumber id="weight" formControlName="weight" [min]="0" [maxFractionDigits]="1" suffix=" kg" placeholder="Ej: 70.5"></p-inputNumber>
+      </div>
+    </div>
+
+    @if (!isEditing()) {
+      <div class="flex items-center gap-3 border border-indigo-100 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-xl mt-1">
+        <p-toggleSwitch formControlName="isActive"></p-toggleSwitch>
+        <div class="flex flex-col">
+          <span class="font-semibold text-indigo-900 dark:text-indigo-200">Activar directamente</span>
+          <span class="text-xs text-indigo-600 dark:text-indigo-400">El usuario podrá iniciar sesión nada más crearlo.</span>
+        </div>
+      </div>
+    }
+
+  </form>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" icon="pi pi-times" [outlined]="true" severity="danger" (onClick)="closeDialog()"></p-button>
+    <p-button label="Guardar" icon="pi pi-check" severity="info" [loading]="saving()" (onClick)="saveUser()"></p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>

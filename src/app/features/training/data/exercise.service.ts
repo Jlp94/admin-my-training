@@ -10,8 +10,12 @@ export class ExerciseService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/exercises`;
 
-  findAll(): Observable<Exercise[]> {
-    return this.http.get<ApiResponse<Exercise[]>>(this.base).pipe(
+  findAll(category?: string): Observable<Exercise[]> {
+    let url = this.base;
+    if (category) {
+      url += `?category=${encodeURIComponent(category)}`;
+    }
+    return this.http.get<ApiResponse<Exercise[]>>(url).pipe(
       map(res => res.data)
     );
   }

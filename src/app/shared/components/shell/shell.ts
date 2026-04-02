@@ -9,6 +9,7 @@ interface NavItem {
   label: string;
   icon: string;      // PrimeIcon or FontAwesome class
   route: string;
+  exact?: boolean;
 }
 
 @Component({
@@ -21,16 +22,16 @@ export class Shell {
   private readonly auth = inject(AuthService);
   
   readonly currentYear = new Date().getFullYear();
-  readonly collapsed = signal(false);
+  readonly collapsed = signal(true);
 
   readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard' },
-    { label: 'Usuarios', icon: 'fa-solid fa-users', route: '/users' },
-    { label: 'Alimentos', icon: 'fa-solid fa-carrot', route: '/diet/foods' },
-    { label: 'Dietas', icon: 'fa-solid fa-utensils', route: '/diet' },
-    { label: 'Ejercicios', icon: 'fa-solid fa-dumbbell', route: '/training/exercises' },
-    { label: 'Cardio', icon: 'fa-solid fa-heart-pulse', route: '/training/cardio' },
-    { label: 'Rutinas', icon: 'fa-solid fa-copy', route: '/training/routines' },
+    { label: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard', exact: true },
+    { label: 'Usuarios', icon: 'fa-solid fa-users', route: '/users', exact: true },
+    { label: 'Alimentos', icon: 'fa-solid fa-carrot', route: '/diet/foods', exact: true },
+    { label: 'Dietas', icon: 'fa-solid fa-utensils', route: '/diet', exact: true },
+    { label: 'Ejercicios', icon: 'fa-solid fa-dumbbell', route: '/training/exercises', exact: true },
+    { label: 'Cardio', icon: 'fa-solid fa-heart-pulse', route: '/training/cardio', exact: true },
+    { label: 'Rutinas', icon: 'fa-solid fa-copy', route: '/training/routines', exact: true },
   ];
 
   toggleSidebar() {
