@@ -10,6 +10,7 @@ import { RoutineList } from './features/training/pages/routine-list/routine-list
 import { RoutineEdit } from './features/training/pages/routine-edit/routine-edit';
 import { ExerciseList } from './features/training/pages/exercise-list/exercise-list';
 import { CardioList } from './features/training/pages/cardio-list/cardio-list';
+import { DietEdit } from './features/diet/pages/diet-edit/diet-edit';
 import { Shell } from './shared/components/shell/shell';
 
 export const routes: Routes = [
@@ -32,6 +33,8 @@ export const routes: Routes = [
         path: 'diet',
         children: [
           { path: '', component: DietList },
+          { path: 'new', component: DietEdit },
+          { path: 'edit/:id', component: DietEdit },
           { path: 'foods', component: FoodList }
         ]
       },

@@ -1,0 +1,11 @@
+// Estilos específicos para el editor de dietas
+.diet-edit-container {
+    // Espaciado y transiciones suaves
+}
+
+// Variables Emerald para PrimeNG si fueran necesarias
+:host ::v-deep {
+    .p-select, .p-inputtext, .p-inputnumber {
+        border-radius: 0.75rem;
+    }
+}

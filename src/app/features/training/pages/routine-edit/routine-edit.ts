@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -17,17 +16,14 @@ import { RoutineService } from '../../data/routine.service';
 import { ExerciseService } from '../../data/exercise.service';
 import { UserService } from '../../../users/data/user.service';
 import { RoutineFormService } from '../../data/routine-form.service';
-import { Routine, DayOfWeek, ExecutionMode } from '../../domain/routine.model';
-import { Exercise, MuscleGroup } from '../../domain/exercise.model';
+import { Exercise } from '../../domain/exercise.model';
 import { User } from '../../../users/domain/user.model';
-import { RoutineType } from '../../domain/routine-type.enum';
 import { FloatLabelModule } from 'primeng/floatlabel';
+import { UiService } from '../../../../shared/services/ui.service';
 
 @Component({
   selector: 'app-routine-edit',
-  standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
@@ -45,11 +41,11 @@ import { FloatLabelModule } from 'primeng/floatlabel';
   styleUrl: './routine-edit.scss',
 })
 export class RoutineEdit implements OnInit {
-  private readonly fb = inject(FormBuilder);
   private readonly routineService = inject(RoutineService);
   private readonly exerciseService = inject(ExerciseService);
   private readonly userService = inject(UserService);
   readonly routineFormService = inject(RoutineFormService);
+  private readonly uiService = inject(UiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
@@ -83,7 +79,7 @@ export class RoutineEdit implements OnInit {
   }
 
   get sessions() {
-    return this.routineForm.get('sessions') as FormArray;
+    return this.routineFormService.getControlArray(this.routineForm, 'sessions');
   }
 
   ngOnInit() {
@@ -133,32 +129,18 @@ export class RoutineEdit implements OnInit {
   addSession(data?: any): FormGroup {
     const session = this.routineFormService.createSessionGroup(data);
 
-    // Si es una sesión nueva (creación manual), añadir un ejercicio por defecto para mejorar la UX
     if (!data) {
-      // Pasamos true para indicar que viene de una sesión nueva y no queremos doble scroll
       this.addExerciseToSession(session, undefined, true);
-      const sessionIndex = this.sessions.length; // Será el próximo índice tras el push
-      this.scrollToSession(sessionIndex);
+      const sessionIndex = this.sessions.length; // Próximo índice
+      this.uiService.scrollToAndHighlight(`session-${sessionIndex}`, { 
+        block: 'start', 
+        highlightSelector: '.p-card-header div',
+        highlightDuration: 2000 
+      });
     }
 
     this.sessions.push(session);
     return session;
-  }
-
-  private scrollToSession(index: number) {
-    setTimeout(() => {
-      const elementId = `session-${index}`;
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Resaltar la cabecera (primera capa de la card)
-        const header = element.querySelector('.p-card-header div');
-        if (header) {
-          header.classList.add('ring-2', 'ring-indigo-500', 'ring-opacity-50');
-          setTimeout(() => header.classList.remove('ring-2', 'ring-indigo-500', 'ring-opacity-50'), 2000);
-        }
-      }
-    }, 100);
   }
 
   removeSession(index: number) {
@@ -166,7 +148,7 @@ export class RoutineEdit implements OnInit {
   }
 
   getExercises(sessionIndex: number) {
-    return this.sessions.at(sessionIndex).get('exercises') as FormArray;
+    return this.routineFormService.getControlArray(this.sessions.at(sessionIndex), 'exercises');
   }
 
   addExerciseToSession(session: FormGroup, data?: any, skipScroll = false) {
@@ -191,21 +173,8 @@ export class RoutineEdit implements OnInit {
     if (!data && !skipScroll) {
       const sessionIndex = this.sessions.controls.indexOf(session);
       const exerciseIndex = exercises.length - 1;
-      this.scrollToExercise(sessionIndex, exerciseIndex);
+      this.uiService.scrollToAndHighlight(`exercise-${sessionIndex}-${exerciseIndex}`);
     }
-  }
-
-  private scrollToExercise(sessionIndex: number, exerciseIndex: number) {
-    setTimeout(() => {
-      const elementId = `exercise-${sessionIndex}-${exerciseIndex}`;
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Efecto visual momentáneo
-        element.classList.add('ring-2', 'ring-indigo-500', 'ring-opacity-50');
-        setTimeout(() => element.classList.remove('ring-2', 'ring-indigo-500', 'ring-opacity-50'), 1500);
-      }
-    }, 100);
   }
 
   removeExerciseFromSession(sessionIndex: number, exerciseIndex: number) {
@@ -213,7 +182,7 @@ export class RoutineEdit implements OnInit {
   }
 
   getSets(exercise: FormGroup) {
-    return exercise.get('sets') as FormArray;
+    return this.routineFormService.getControlArray(exercise, 'sets');
   }
 
   addSetToExercise(exercise: FormGroup, data?: any) {
@@ -227,9 +196,7 @@ export class RoutineEdit implements OnInit {
 
   removeLastSet(exercise: FormGroup) {
     const sets = this.getSets(exercise);
-    if (sets.length > 1) {
-      sets.removeAt(sets.length - 1);
-    }
+    this.routineFormService.removeLastItem(sets);
   }
 
   // --- LÓGICA DE NEGOCIO ---

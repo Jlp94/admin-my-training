@@ -25,4 +25,16 @@ export class DietService {
   remove(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
+
+  create(diet: Partial<Diet>): Observable<Diet> {
+    return this.http.post<ApiResponse<Diet>>(this.base, diet).pipe(
+      map(response => response.data)
+    );
+  }
+
+  update(id: string, diet: Partial<Diet>): Observable<Diet> {
+    return this.http.put<ApiResponse<Diet>>(`${this.base}/${id}`, diet).pipe(
+      map(response => response.data)
+    );
+  }
 }

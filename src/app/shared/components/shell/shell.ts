@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { AvatarModule } from 'primeng/avatar';
@@ -18,11 +18,20 @@ interface NavItem {
   imports: [RouterOutlet, RouterLink, RouterLinkActive, ButtonModule, TooltipModule, AvatarModule],
   templateUrl: './shell.html',
 })
-export class Shell {
-  private readonly auth = inject(AuthService);
+export class Shell implements OnInit {
+  public readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
   
   readonly currentYear = new Date().getFullYear();
   readonly collapsed = signal(true);
+  readonly currentUser = this.auth.currentUser;
+
+  ngOnInit() {
+    // Si al cargar el Shell no estamos autenticados (token inválido/expirado), fuera
+    if (!this.auth.isAuthenticated()) {
+      this.auth.logout();
+    }
+  }
 
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'fa-solid fa-house', route: '/dashboard', exact: true },

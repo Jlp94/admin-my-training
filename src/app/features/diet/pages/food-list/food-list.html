@@ -22,7 +22,7 @@
       [alwaysShowPaginator]="true"
       currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} alimentos"
       class="flex-1 flex flex-col h-full min-h-0 w-full"
-      styleClass="p-datatable-sm p-datatable-flex-bottom"
+      class="p-datatable-sm p-datatable-flex-bottom"
       responsiveLayout="scroll">
       
       <ng-template pTemplate="header">
@@ -93,7 +93,7 @@
   [(visible)]="showDialog" 
   [header]="isEditing() ? 'Editar Alimento' : 'Nuevo Alimento'" 
   [modal]="true" 
-  styleClass="p-fluid shadow-xl w-[550px]"
+  class="p-fluid shadow-xl w-[550px]"
   (onHide)="closeDialog()">
   
   <form [formGroup]="foodForm" class="flex flex-col gap-5 mt-3">

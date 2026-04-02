@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, effect } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -17,7 +17,7 @@ import { User } from '../../domain/user.model';
 
 @Component({
   selector: 'app-user-list',
-  standalone: true,
+
   imports: [
     ReactiveFormsModule, FormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, InputNumberModule,
@@ -52,11 +52,6 @@ export class UserList implements OnInit {
     weight: [null]
   });
 
-  constructor() {
-    effect(() => {
-      console.log('Tests [Signal Update]:', this.facade.clients());
-    });
-  }
 
   ngOnInit() {
     this.facade.loadUsers();

@@ -1,0 +1,383 @@
+<div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-slate-50 dark:bg-gray-950">
+  <form [formGroup]="dietForm" class="max-w-[1600px] mx-auto">
+    <!-- GRID PRINCIPAL (12 COLUMNAS) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- COLUMNA IZQUIERDA: FORMULARIO (10/12) -->
+      <div class="lg:col-span-10 space-y-6">
+        <!-- CABECERA ACCIONES -->
+        <div
+          class="flex flex-wrap justify-between items-center gap-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600"
+            >
+              <i class="fa-solid fa-utensils text-xl"></i>
+            </div>
+            <div>
+              <h1
+                class="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight"
+              >
+                {{ isEditing() ? 'Editar Dieta' : 'Nueva Dieta' }}
+              </h1>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Planificación Nutricional Sistema v21
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <p-button
+              icon="fa-solid fa-arrow-left"
+              [raised]="true"
+              severity="secondary"
+              (onClick)="cancel()"
+              label="Volver"
+              pTooltip="Salir sin guardar"
+            ></p-button>
+          </div>
+        </div>
+
+        <!-- CONFIGURACIÓN BÁSICA -->
+        <p-card class="border-none shadow-sm overflow-hidden rounded-3xl">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1"
+                >Cliente</label
+              >
+              <p-select
+                [options]="users()"
+                [filter]="true"
+                filterBy="profile.name"
+                formControlName="userId"
+                optionLabel="profile.name"
+                optionValue="_id"
+                placeholder="Buscar..."
+                appendTo="body"
+                class="w-full border-none bg-slate-50 dark:bg-gray-800/50 rounded-xl"
+              >
+                <ng-template let-user pTemplate="item">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black"
+                    >
+                      {{ user.getInitials() }}
+                    </div>
+                    <span class="font-bold">{{ user.getFullName() }}</span>
+                  </div>
+                </ng-template>
+              </p-select>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1"
+                >Nombre</label
+              >
+              <input
+                pInputText
+                formControlName="name"
+                placeholder="Ej: Dieta A..."
+                class="w-full border-none bg-slate-50 dark:bg-gray-800/50 rounded-xl font-bold px-4 py-3"
+              />
+            </div>
+          </div>
+          <div class="mt-4 p-2">
+            <label
+              class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1 mb-1 block"
+              >Notas</label
+            >
+            <textarea
+              pTextarea
+              formControlName="notes"
+              rows="1"
+              [autoResize]="true"
+              placeholder="Instrucciones adicionales..."
+              class="w-full border-none bg-slate-50 dark:bg-gray-800/50 p-4 rounded-2xl font-medium"
+            ></textarea>
+          </div>
+        </p-card>
+
+        <!-- COMIDAS -->
+        <div formArrayName="meals" class="space-y-6">
+          <p-accordion [multiple]="true" [value]="['0']">
+            @for (meal of meals.controls; track mealIndex; let mealIndex = $index) {
+              <p-accordion-panel
+                [value]="mealIndex.toString()"
+                [formGroupName]="mealIndex"
+                class="mb-4 border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm"
+              >
+                <p-accordion-header>
+                  <div class="flex items-center justify-between w-full pr-4 py-1">
+                    <div class="flex items-center gap-4">
+                      <div
+                        class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black text-xs shadow-lg shadow-emerald-500/20"
+                      >
+                        {{ mealIndex + 1 }}
+                      </div>
+                      <input
+                        pInputText
+                        formControlName="name"
+                        placeholder="Nombre..."
+                        class="bg-transparent border-none font-black text-xl text-gray-800 dark:text-gray-100 focus:ring-0 w-64 p-0 shadow-none uppercase tracking-tight"
+                        (click)="$event.stopPropagation()"
+                      />
+                    </div>
+                    <p-button
+                      icon="fa-solid fa-trash-can"
+                      [text]="true"
+                      severity="danger"
+                      (onClick)="removeMeal(mealIndex); $event.stopPropagation()"
+                    ></p-button>
+                  </div>
+                </p-accordion-header>
+
+                <p-accordion-content>
+                  <div formArrayName="foods" class="space-y-4 py-2">
+                    @for (
+                      foodGroup of getFoods(mealIndex).controls;
+                      track foodIndex;
+                      let foodIndex = $index
+                    ) {
+                      <div
+                        [formGroupName]="foodIndex"
+                        class="group flex flex-col gap-3 p-4 bg-slate-50/80 dark:bg-gray-800/20 rounded-3xl border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800/40 transition-all shadow-sm"
+                      >
+                        <div class="flex flex-col md:flex-row items-end gap-3">
+                          <div class="w-full md:w-52 flex flex-col gap-1">
+                            <label
+                              class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1"
+                              >Tipo</label
+                            >
+                            <p-select
+                              [options]="dietFormService.nutritionalTypes"
+                              formControlName="nutritionalType"
+                              placeholder="Tipo..."
+                              class="w-full border-none shadow-sm bg-white dark:bg-gray-900 rounded-xl"
+                              appendTo="body"
+                            ></p-select>
+                          </div>
+
+                          <div class="flex-1 w-full flex flex-col gap-1">
+                            <label
+                              class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1"
+                              >Alimento</label
+                            >
+                            <p-select
+                              [options]="getFoodsByType(foodGroup.get('nutritionalType')?.value)"
+                              formControlName="foodId"
+                              optionLabel="name"
+                              optionValue="_id"
+                              [filter]="true"
+                              filterBy="name"
+                              placeholder="Seleccionar..."
+                              class="w-full border-none shadow-sm bg-white dark:bg-gray-900 rounded-xl"
+                              appendTo="body"
+                            >
+                              <ng-template let-food pTemplate="item">
+                                <div class="flex justify-between items-center w-full px-1">
+                                  <span class="font-bold text-gray-800 dark:text-gray-200">{{
+                                    food.name
+                                  }}</span>
+                                  <span
+                                    class="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full font-black uppercase"
+                                    >{{ food.kcal }} kcal</span
+                                  >
+                                </div>
+                              </ng-template>
+                            </p-select>
+                          </div>
+
+                          <div class="w-full md:w-28 flex flex-col gap-1">
+                            <label
+                              class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1"
+                              >Cant. (g)</label
+                            >
+                            <p-inputNumber
+                              formControlName="quantity"
+                              [min]="1"
+                              fluid
+                              suffix=" g"
+                              class="p-inputnumber-sm w-full border-none shadow-sm bg-white dark:bg-gray-900 rounded-xl overflow-hidden"
+                            ></p-inputNumber>
+                          </div>
+
+                          <div class="flex items-end pb-0.5">
+                            <p-button
+                              icon="fa-solid fa-xmark text-sm"
+                              [text]="true"
+                              severity="danger"
+                              (onClick)="removeFoodFromMeal(mealIndex, foodIndex)"
+                            ></p-button>
+                          </div>
+                        </div>
+
+                        <!-- DESGLOSE SUTIL -->
+                        @if (
+                          getFoodMetrics(
+                            foodGroup.get('foodId')?.value,
+                            foodGroup.get('quantity')?.value
+                          );
+                          as metrics
+                        ) {
+                          <div
+                            class="flex flex-wrap items-center gap-4 px-4 py-2 bg-white/60 dark:bg-gray-900/40 rounded-xl text-[10px] font-bold border border-emerald-100/30 dark:border-emerald-800/20"
+                          >
+                            <span class="text-emerald-600 uppercase tracking-widest">{{
+                              getFoodName(foodGroup.get('foodId')?.value)
+                            }}</span>
+                            <div class="h-3 w-px bg-slate-100 dark:bg-gray-700"></div>
+                            <div class="flex gap-4 text-gray-500">
+                              <span
+                                ><span class="opacity-50 mr-1">KC:</span>{{ metrics.kcal }}</span
+                              >
+                              <span
+                                ><span class="opacity-50 mr-1">P:</span>{{ metrics.protein }}g</span
+                              >
+                              <span
+                                ><span class="opacity-50 mr-1">C:</span>{{ metrics.carbs }}g</span
+                              >
+                              <span><span class="opacity-50 mr-1">G:</span>{{ metrics.fat }}g</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <!-- BOTÓN AÑADIR ALIMENTO CENTRADO -->
+                    <div class="flex justify-center mt-2">
+                      <p-button
+                        label="Añadir Alimento"
+                        [outlined]="true"
+                        icon="fa-solid fa-plus"
+                        severity="success"
+                        (onClick)="addFoodToMeal(mealIndex)"
+                        class="px-8 py-2 tracking-widest"
+                      ></p-button>
+                    </div>
+                  </div>
+                </p-accordion-content>
+              </p-accordion-panel>
+            }
+          </p-accordion>
+
+          <!-- BOTÓN AÑADIR COMIDA CENTRADO -->
+          <div class="flex justify-center pt-4">
+            <p-button
+              label="Añadir Nueva Comida"
+              icon="fa-solid fa-plus"
+              [raised]="true"
+              severity="success"
+              (onClick)="addMeal()"
+              class="px-10 py-3 tracking-widest"
+            ></p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: RESUMEN (2/12) -->
+      <div class="lg:col-span-2 lg:sticky lg:top-8 space-y-4">
+        <!-- CARD TRANSLÚCIDA ESTRECHA -->
+        <div
+          class="relative overflow-hidden bg-green-200/30 dark:bg-green-950/20 backdrop-blur-xl rounded-4xl border-2 border-dashed border-green-500/40 shadow-xl shadow-green-500/5 flex flex-col items-stretch"
+        >
+          <div class="relative p-4">
+            <h3
+              class="text-[15px] font-black uppercase tracking-[0.2em] text-green-600 dark:text-green-400 mb-3 flex items-center gap-2 opacity-60"
+            >
+              <i class="fa-solid fa-chart-simple"></i>
+              Resumen
+            </h3>
+
+            <!-- KCAL ULTRA-COMPACTO -->
+            <div
+              class="flex flex-col items-center justify-center py-4 mb-4 bg-green-500/15 dark:bg-white/5 rounded-3xl border border-green-500/10"
+            >
+              <span class="text-3xl font-black text-gray-800 dark:text-white tracking-tighter">{{
+                totals().kcal
+              }}</span>
+              <span class="text-[8px] font-black uppercase tracking-widest text-green-600/60 mt-0.5"
+                >kcal totales</span
+              >
+            </div>
+
+            <!-- MACROS EN COLUMNA -->
+            <div class="space-y-2">
+              <div
+                class="flex justify-between items-center bg-white/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-[9px] font-black uppercase tracking-widest text-red-500/80"
+                  >Pro</span
+                >
+                <span class="text-sm font-black text-gray-800 dark:text-gray-100"
+                  >{{ totals().protein
+                  }}<span class="text-[8px] ml-0.5 opacity-30 font-bold">g</span></span
+                >
+              </div>
+
+              <div
+                class="flex justify-between items-center bg-white/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-[9px] font-black uppercase tracking-widest text-yellow-500/80"
+                  >CH</span
+                >
+                <span class="text-sm font-black text-gray-800 dark:text-gray-100"
+                  >{{ totals().carbs
+                  }}<span class="text-[8px] ml-0.5 opacity-30 font-bold">g</span></span
+                >
+              </div>
+
+              <div
+                class="flex justify-between items-center bg-white/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700"
+              >
+                <span class="text-[9px] font-black uppercase tracking-widest text-blue-500/80"
+                  >Grasa</span
+                >
+                <span class="text-sm font-black text-gray-800 dark:text-gray-100"
+                  >{{ totals().fat
+                  }}<span class="text-[8px] ml-0.5 opacity-30 font-bold">g</span></span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTÓN GUARDAR FULL WIDTH -->
+          <div class="p-3 bg-emerald-500/5 border-emerald-500/5">
+            <p-button
+              [label]="isEditing() ? 'OK' : 'Guardar'"
+              (onClick)="save()"
+              [loading]="saving()"
+              [raised]="true"
+              [rounded]="true"
+              severity="success"
+              styleClass="w-full tracking-widest"
+            >
+            </p-button>
+          </div>
+        </div>
+
+        <!-- RATIO -->
+        <div
+          class="bg-white/20 dark:bg-gray-900/20 backdrop-blur-md rounded-3xl p-3 border border-dashed border-gray-200 dark:border-gray-800"
+        >
+          <div class="flex h-1 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <div
+              [style.width.%]="((totals().protein * 4) / totals().kcal) * 100 || 0"
+              class="bg-red-500"
+              pTooltip="Proteína"
+            ></div>
+            <div
+              [style.width.%]="((totals().carbs * 4) / totals().kcal) * 100 || 0"
+              class="bg-yellow-500"
+              pTooltip="CH"
+            ></div>
+            <div
+              [style.width.%]="((totals().fat * 9) / totals().kcal) * 100 || 0"
+              class="bg-blue-500"
+              pTooltip="Grasa"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<p-toast position="bottom-right" />

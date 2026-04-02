@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, AbstractControl } from '@angular/forms';
 import { DayOfWeek, ExecutionMode } from '../domain/routine.model';
 import { MuscleGroup } from '../domain/exercise.model';
 import { RoutineType, RoutineTypeOptions } from '../domain/routine-type.enum';
+import { getControlArray, removeLastItem } from '../../../shared/utils/form.utils';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineFormService {
@@ -82,6 +83,16 @@ export class RoutineFormService {
       reps: [data?.reps || 10, [Validators.required, Validators.min(1)]],
       rir: [data?.rir || 0, [Validators.required, Validators.min(0), Validators.max(5)]]
     });
+  }
+
+  /** Delegación a shared/utils/form.utils */
+  getControlArray(parent: AbstractControl, path: string): FormArray {
+    return getControlArray(parent, path);
+  }
+
+  /** Delegación a shared/utils/form.utils */
+  removeLastItem(array: FormArray, minLength: number = 1): void {
+    removeLastItem(array, minLength);
   }
 
   /**

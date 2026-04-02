@@ -54,7 +54,7 @@
     <!-- LISTADO DE SESIONES (DÍAS) -->
     <div formArrayName="sessions" class="space-y-8">
       @for (session of sessions.controls; track sessionIndex; let sessionIndex = $index) {
-        <p-card [formGroupName]="sessionIndex" [id]="'session-' + sessionIndex" styleClass="shadow-lg border-t-4 border-indigo-500 overflow-hidden">
+        <p-card [formGroupName]="sessionIndex" [id]="'session-' + sessionIndex" class="shadow-lg border-t-4 border-indigo-500 overflow-hidden">
           
           <ng-template pTemplate="header">
             <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
@@ -140,7 +140,7 @@
 
                       <div class="w-32 flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Descanso (s)</label>
-                        <p-inputNumber formControlName="rest" appendTo="body" fluid suffix=" s" [min]="0" class="inputtext-sm" inputStyleClass="text-center"></p-inputNumber>
+                        <p-inputNumber formControlName="rest" appendTo="body" fluid suffix=" s" [min]="0" class="inputtext-sm" inputClass="text-center"></p-inputNumber>
                       </div>
 
                       <div class="flex items-end h-full">
@@ -164,15 +164,15 @@
                         <div class="flex gap-3">
                           <div class="flex items-center gap-1.5">
                             <span class="text-[8px] text-gray-500 font-bold uppercase">Excéntrica</span>
-                            <p-inputNumber formControlName="eccentric" fluid [min]="0" styleClass="w-8" inputStyleClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
+                            <p-inputNumber formControlName="eccentric" fluid [min]="0" class="w-8" inputClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
                           </div>
                           <div class="flex items-center gap-1.5">
                             <span class="text-[8px] text-gray-500 font-bold uppercase">Isométrica</span>
-                            <p-inputNumber formControlName="isometric" fluid [min]="0" styleClass="w-8" inputStyleClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
+                            <p-inputNumber formControlName="isometric" fluid [min]="0" class="w-8" inputClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
                           </div>
                           <div class="flex items-center gap-1.5">
                             <span class="text-[8px] text-gray-500 font-bold uppercase">Concéntrica</span>
-                            <p-inputNumber formControlName="concentric" fluid [min]="0" styleClass="w-8" inputStyleClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
+                            <p-inputNumber formControlName="concentric" fluid [min]="0" class="w-8" inputClass="text-center p-0.5 text-[10px] rounded-md font-bold"></p-inputNumber>
                           </div>
                         </div>
                       </div>
@@ -193,20 +193,20 @@
                           <div [formGroupName]="indexSet" class="flex flex-col gap-1 bg-white dark:bg-gray-800 px-2 py-1.5 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 relative group">
                             <div class="flex justify-between items-center mb-1">
                               <span class="text-[10px] font-bold text-indigo-400">SERIE {{ indexSet + 1 }}</span>
-                              <p-button icon="fa-solid fa-xmark text-[14px]" [text]="true" severity="danger" styleClass="w-4 h-4 p-0" (onClick)="removeSetFromExercise($any(exGroup), indexSet)"></p-button>
+                              <p-button icon="fa-solid fa-xmark text-[14px]" [text]="true" severity="danger" class="w-4 h-4 p-0" (onClick)="removeSetFromExercise($any(exGroup), indexSet)"></p-button>
                             </div>
                             <div class="grid grid-cols-3 gap-1">
                               <div class="flex flex-col">
                                 <span class="text-[7px] font-bold text-gray-400 uppercase">KG</span>
-                                <p-inputNumber formControlName="kg" [min]="0" [showButtons]="false" [maxFractionDigits]="1" fluid inputStyleClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
+                                <p-inputNumber formControlName="kg" [min]="0" [showButtons]="false" [maxFractionDigits]="1" fluid inputClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
                               </div>
                               <div class="flex flex-col">
                                 <span class="text-[7px] font-bold text-gray-400 uppercase">REPS</span>
-                                <p-inputNumber formControlName="reps" [min]="1" [showButtons]="false" fluid inputStyleClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
+                                <p-inputNumber formControlName="reps" [min]="1" [showButtons]="false" fluid inputClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
                               </div>
                               <div class="flex flex-col">
                                 <span class="text-[7px] font-bold text-gray-400 uppercase">RIR</span>
-                                <p-inputNumber formControlName="rir" [min]="0" [max]="5" [showButtons]="false" fluid inputStyleClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
+                                <p-inputNumber formControlName="rir" [min]="0" [max]="5" [showButtons]="false" fluid inputClass="text-center p-1 text-[10px] w-full"></p-inputNumber>
                               </div>
                             </div>
                           </div>

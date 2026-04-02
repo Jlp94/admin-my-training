@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -16,9 +15,7 @@ import { UserInterface } from '../../../users/domain/user.interface';
 
 @Component({
   selector: 'app-routine-list',
-  standalone: true,
   imports: [
-    CommonModule, 
     TableModule, 
     ButtonModule, 
     TagModule, 

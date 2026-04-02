@@ -10,7 +10,7 @@
     <p-button label="Nueva Rutina" icon="fa-solid fa-plus" (onClick)="goToNew()" severity="info"></p-button>
   </div>
 
-  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
     <p-table 
       [value]="routines()" 
       [loading]="loading()"
@@ -21,7 +21,9 @@
       (onRowExpand)="onRowExpand($event)"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} rutinas"
-      styleClass="p-datatable-sm">
+      class="flex-1 flex flex-col h-full min-h-0 w-full"
+      class="p-datatable-sm p-datatable-flex-bottom"
+      responsiveLayout="scroll">
       
       <ng-template pTemplate="header">
         <tr>

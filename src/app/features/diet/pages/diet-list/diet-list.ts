@@ -8,7 +8,9 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { DietService } from '../../data/diet.service';
+import { UserService } from '../../../users/data/user.service';
 import { Diet } from '../../domain/diet.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-diet-list',
@@ -22,14 +24,30 @@ import { Diet } from '../../domain/diet.model';
 })
 export class DietList implements OnInit {
   private readonly dietService = inject(DietService);
+  private readonly userService = inject(UserService);
+  private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
 
   readonly diets = signal<Diet[]>([]);
+  readonly users = signal<Record<string, string>>({}); // Mapeo ID -> Nombre
   readonly loading = signal(false);
 
   ngOnInit() {
+    this.loadUsers();
     this.loadDiets();
+  }
+
+  loadUsers() {
+    this.userService.findAll().subscribe(users => {
+      const mapping: Record<string, string> = {};
+      users.forEach(u => mapping[u.getId] = u.getFullName());
+      this.users.set(mapping);
+    });
+  }
+
+  getUserName(userId: string): string {
+    return this.users()[userId] || 'Usuario desconocido';
   }
 
   loadDiets() {
@@ -44,6 +62,14 @@ export class DietList implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  editDiet(diet: Diet) {
+    this.router.navigate(['/diet/edit', diet._id]);
+  }
+
+  addDiet() {
+    this.router.navigate(['/diet/new']);
   }
 
   deleteDiet(diet: Diet) {
