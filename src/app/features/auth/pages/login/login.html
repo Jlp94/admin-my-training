@@ -20,9 +20,9 @@
           type="email"
           formControlName="email"
           placeholder="admin@ejemplo.com"
-          class="w-full"
           [class.ng-dirty]="isInvalid('email')"
           [class.ng-invalid]="isInvalid('email')"
+          fluid
         />
         @if (isInvalid('email')) {
           <small class="text-red-500">Introduce un correo electrónico válido.</small>
@@ -36,11 +36,10 @@
           formControlName="password"
           [feedback]="false"
           [toggleMask]="true"
-          class="w-full"
-          inputClass="w-full"
           placeholder="••••••••"
           [class.ng-dirty]="isInvalid('password')"
           [class.ng-invalid]="isInvalid('password')"
+          fluid
         />
         @if (isInvalid('password')) {
           <small class="text-red-500">La contraseña es obligatoria (mínimo 6 caracteres).</small>

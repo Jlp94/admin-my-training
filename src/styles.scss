@@ -1,7 +1,7 @@
 /* Estilos SCSS globales adicionales */
-@import "tailwindcss";
-@import "primeicons/primeicons.css";
-@import "@fortawesome/fontawesome-free/css/all.min.css";
+@use "tailwindcss";
+@use "primeicons/primeicons.css";
+@use "@fortawesome/fontawesome-free/css/all.min.css";
 
 /* Forzar que el paginador de PrimeNG quede siempre abajo en las tarjetas con flex */
 .p-datatable-flex-bottom {

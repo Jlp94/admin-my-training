@@ -92,8 +92,7 @@
 <p-dialog 
   [(visible)]="showDialog" 
   [header]="isEditing() ? 'Editar Alimento' : 'Nuevo Alimento'" 
-  [modal]="true" 
-  class="p-fluid shadow-xl w-[550px]"
+  [modal]="true"
   (onHide)="closeDialog()">
   
   <form [formGroup]="foodForm" class="flex flex-col gap-5 mt-3">

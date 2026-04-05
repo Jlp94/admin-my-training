@@ -74,7 +74,6 @@
   [(visible)]="showDialog" 
   [header]="isEditing() ? 'Editar Cardio' : 'Nueva Actividad'" 
   [modal]="true" 
-  class="p-fluid shadow-xl w-[450px]"
   (onHide)="closeDialog()">
   
   <form [formGroup]="cardioForm" class="flex flex-col gap-5 mt-3">
