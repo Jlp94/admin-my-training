@@ -1,12 +1,14 @@
-import { UserInterface, UserProfileInterface } from './user.interface';
+import { UserInterface, UserProfileInterface, UserMacrosInterface, UserNeatInterface, WorkoutLogInterface, DietLogInterface } from './user.interface';
 
 export class User {
+  // ── PROPIEDADES PRIVADAS ──
   private _id: string;
   private email: string;
   private role: 'admin' | 'user';
   private isActive: boolean;
   private profile: UserProfileInterface;
 
+  // ── CONSTRUCTOR ──
   constructor(user: UserInterface) {
     this._id = user._id;
     this.email = user.email;
@@ -15,10 +17,7 @@ export class User {
     this.profile = user.profile;
   }
 
-  getFullName(): string {
-    return `${this.profile?.name || ''} ${this.profile?.lastName || ''}`.trim() || 'Usuario sin nombre';
-  }
-
+  // ── GETTERS (Propiedades del Core) ──
   get getId(): string {
     return this._id;
   }
@@ -35,21 +34,103 @@ export class User {
     return this.isActive;
   }
 
-  set setIsActive(value: boolean) {
-    this.isActive = value;
-  }
-
   get getProfile(): UserProfileInterface {
     return this.profile;
   }
 
+  // ── GETTERS (Propiedades del Perfil) ──
+  get getName(): string {
+    return this.profile?.name ?? '';
+  }
+
+  get getAvatarUrl(): string | undefined {
+    return this.profile?.avatarUrl;
+  }
+
+  get getHeight(): number | undefined {
+    return this.profile?.height;
+  }
+
+  get getWeight(): number | undefined {
+    return this.profile?.weight;
+  }
+
+  get getCardioKcalGoal(): number {
+    return this.profile?.cardioKcalGoal ?? 0;
+  }
+
+  get getCurrentDietId(): string | undefined {
+    return this.profile?.currentDietId;
+  }
+
+  get getCurrentRoutineId(): string | undefined {
+    return this.profile?.currentRoutineId;
+  }
+
+  get getMacros(): UserMacrosInterface | undefined {
+    return this.profile?.macros;
+  }
+
+  // Getters específicos de Macros
+  get getTargetKcal(): number {
+    return this.profile?.macros?.targetKcal ?? 0;
+  }
+
+  get getExtraKcal(): number {
+    return this.profile?.macros?.extraKcal ?? 0;
+  }
+
+  get getProtein(): number {
+    return this.profile?.macros?.protein ?? 0;
+  }
+
+  get getCarbs(): number {
+    return this.profile?.macros?.carbs ?? 0;
+  }
+
+  get getFat(): number {
+    return this.profile?.macros?.fat ?? 0;
+  }
+
+  // Getters de Logs
+  get getWorkoutLogs(): WorkoutLogInterface[] {
+    return this.profile?.workoutLogs ?? [];
+  }
+
+  get getNeatLogs(): UserNeatInterface[] {
+    return this.profile?.neatLogs ?? [];
+  }
+
+  get getDietLogs(): DietLogInterface[] {
+    return this.profile?.dietLogs ?? [];
+  }
+
+  // ── SETTERS ──
+  set setIsActive(value: boolean) {
+    this.isActive = value;
+  }
+
+  // ── MÉTODOS DE DOMINIO ──
+  getFullName(): string {
+    return `${this.profile?.name || ''} ${this.profile?.lastName || ''}`.trim() || 'Usuario sin nombre';
+  }
+
+  getInitials(): string {
+    const name = this.profile?.name?.[0] || '';
+    const last = this.profile?.lastName?.[0] || '';
+    return (name + last).toUpperCase() || this.email[0].toUpperCase();
+  }
+
+  getLastWeight(): number | string {
+    const lastLog = this.profile?.neatLogs?.at(-1);    
+    return lastLog?.weight ?? '—';
+  }
+
+  // ── UTILERÍA ESTÁTICA ──
   /**
    * Genera el objeto de datos que se enviará a la API (payload).
-   * Si hay un usuario existente (EDICIÓN), devuelve un objeto "plano" para el UpdateUserDto de la API.
-   * Si el usuario es nuevo (CREACIÓN), devuelve un objeto anidado para el CreateUserDto de la API.
    */
   static preparePayload(formVal: any, existingUser?: User): any {
-    // Si estamos editando (PATCH), la API espera campos planos
     if (existingUser) {
       const payload: any = {
         email: formVal.email,
@@ -61,7 +142,6 @@ export class User {
         weight: formVal.weight
       };
 
-      // Solo incluimos el password si se ha rellenado (mínimo 6 caracteres)
       if (formVal.password && formVal.password.length >= 6) {
         payload.password = formVal.password;
       }
@@ -69,7 +149,6 @@ export class User {
       return payload;
     }
 
-    // SI ES NUEVO (POST), la API espera estructura anidada en 'profile'
     const profileBase = {
       name: formVal.name,
       lastName: formVal.lastName,
@@ -89,18 +168,5 @@ export class User {
       isActive: formVal.isActive,
       profile: profileBase
     };
-  }
-
-  // Obtiene las iniciales del usuario para el avatar
-  getInitials(): string {
-    const name = this.profile?.name?.[0] || '';
-    const last = this.profile?.lastName?.[0] || '';
-    return (name + last).toUpperCase() || this.email[0].toUpperCase();
-  }
-
-  // Obtiene el último peso registrado del log NEAT
-  getLastWeight(): number | string {
-    const lastLog = this.profile?.neatLogs?.at(-1);    
-    return lastLog?.weight ?? '—';
   }
 }

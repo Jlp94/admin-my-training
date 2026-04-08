@@ -20,6 +20,7 @@ export interface Diet {
   name: string;
   isActive: boolean;
   meals: Meal[];
+  extraKcal?: number;
   totalKcal: number;
   totalMacros?: DietMacros;
   notes?: string;

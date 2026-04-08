@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 // PrimeNG
 import { ButtonModule } from 'primeng/button';
@@ -32,7 +33,7 @@ import { UiService } from '../../../../shared/services/ui.service';
     ReactiveFormsModule,
     ButtonModule, InputTextModule, TextareaModule, InputNumberModule,
     SelectModule, CardModule, AccordionModule,
-    ToastModule, TooltipModule
+    ToastModule, TooltipModule, RouterLink
   ],
   providers: [MessageService],
   templateUrl: './diet-edit.html',
@@ -48,6 +49,7 @@ export class DietEdit implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // States
   readonly dietId = signal<string | null>(null);
@@ -78,7 +80,9 @@ export class DietEdit implements OnInit {
     this.loadInitialData();
     
     // Observar ID de ruta
-    this.route.params.subscribe(params => {
+    this.route.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
       if (params['id']) {
         this.dietId.set(params['id']);
         this.loadDiet(params['id']);
@@ -89,14 +93,21 @@ export class DietEdit implements OnInit {
     });
 
     // Suscribirse a cambios para recalcular macros/kcal
-    this.dietForm.valueChanges.subscribe(() => {
+    this.dietForm.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
       this.calculateTotals();
     });
   }
 
   private loadInitialData() {
-    this.foodService.findAll().subscribe(foods => this.foods.set(foods));
-    this.userService.findAll().subscribe(users => {
+    this.foodService.findAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(foods => this.foods.set(foods));
+      
+    this.userService.findAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(users => {
       // Cliente (rol 'user')
       this.users.set(users.filter(u => u.getRole === 'user'));
     });
@@ -104,13 +115,16 @@ export class DietEdit implements OnInit {
 
   private loadDiet(id: string) {
     this.loading.set(true);
-    this.dietService.findOne(id).subscribe({
+    this.dietService.findOne(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (diet) => {
         this.dietForm.patchValue({
           userId: diet.userId,
           name: diet.name,
           isActive: diet.isActive,
-          notes: diet.notes
+          notes: diet.notes,
+          extraKcal: diet.extraKcal || 0
         });
 
         // Limpiar y cargar comidas
@@ -194,15 +208,17 @@ export class DietEdit implements OnInit {
     }));
 
     const totals = this.calculatorService.calculateDietTotals(mealsWithData);
+    const extraKcal = formValue.extraKcal || 0;
+
     this.formTotals.set({
-      kcal: totals.kcal,
+      kcal: totals.kcal + extraKcal,
       protein: totals.protein || 0,
       carbs: totals.carbs || 0,
       fat: totals.fat || 0
     });
     
     // Actualizar campos sin disparar bucle infinito (emitEvent: false)
-    this.dietForm.get('totalKcal')?.setValue(totals.kcal, { emitEvent: false });
+    this.dietForm.get('totalKcal')?.setValue(totals.kcal + extraKcal, { emitEvent: false });
     this.dietForm.get('totalMacros')?.patchValue(totals, { emitEvent: false });
   }
 
@@ -221,7 +237,7 @@ export class DietEdit implements OnInit {
       ? this.dietService.update(this.dietId()!, dietData)
       : this.dietService.create(dietData);
 
-    obs.subscribe({
+    obs.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Dieta guardada correctamente' });
         setTimeout(() => this.router.navigate(['/diet']), 1000);
@@ -231,9 +247,5 @@ export class DietEdit implements OnInit {
         this.saving.set(false);
       }
     });
-  }
-
-  cancel() {
-    this.router.navigate(['/diet']);
   }
 }

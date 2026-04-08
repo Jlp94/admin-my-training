@@ -3,7 +3,7 @@
   <!-- CABECERA -->
   <div class="flex justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
     <div class="flex items-center gap-4">
-      <p-button icon="fa-solid fa-arrow-left" [text]="true" severity="secondary" (onClick)="goBack()"></p-button>
+      <p-button icon="fa-solid fa-arrow-left" [text]="true" severity="secondary" routerLink="/training/routines"></p-button>
       <div>
         <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 italic">
           {{ isEditing() ? 'Editar Rutina' : 'Nueva Rutina' }}
@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="flex gap-2">
-      <p-button label="Cancelar" icon="fa-solid fa-xmark" [outlined]="true" severity="danger" (onClick)="goBack()"></p-button>
+      <p-button label="Cancelar" icon="fa-solid fa-xmark" [outlined]="true" severity="danger" routerLink="/training/routines"></p-button>
       <p-button label="Guardar Rutina" icon="fa-solid fa-cloud-arrow-up" severity="info" [loading]="saving()" (onClick)="save()"></p-button>
     </div>
   </div>
@@ -53,7 +53,7 @@
 
     <!-- LISTADO DE SESIONES (DÍAS) -->
     <div formArrayName="sessions" class="space-y-8">
-      @for (session of sessions.controls; track sessionIndex; let sessionIndex = $index) {
+      @for (session of sessions.controls; track session; let sessionIndex = $index) {
         <p-card [formGroupName]="sessionIndex" [id]="'session-' + sessionIndex" class="shadow-lg border-t-4 border-indigo-500 overflow-hidden">
           
           <ng-template pTemplate="header">
@@ -109,7 +109,7 @@
               </div>
 
               <div formArrayName="exercises" class="space-y-4">
-                @for (exGroup of getExercises(sessionIndex).controls; track exerciseIndex; let exerciseIndex = $index) {
+                @for (exGroup of getExercises(sessionIndex).controls; track exGroup; let exerciseIndex = $index) {
                   <div [formGroupName]="exerciseIndex" [id]="'exercise-' + sessionIndex + '-' + exerciseIndex" class="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 transition-colors">
                     
                     <!-- FILA DE SELECCIÓN Y CONFIG BÁSICA (SIMÉTRICA) -->
@@ -122,14 +122,14 @@
                       <div class="flex-1 min-w-[200px] flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Ejercicio Seleccionado</label>
                         <p-select [options]="getExercisesForGroup($any(exGroup).get('muscleGroup')?.value)" 
-                                formControlName="exerciseId" 
-                                fluid
-                                appendTo="body"
-                                optionLabel="name" 
-                                optionValue="_id" 
-                                [filter]="true"
-                                placeholder="Selecciona ejercicio..."
-                                >
+                                 formControlName="exerciseId" 
+                                 fluid
+                                 appendTo="body"
+                                 optionLabel="name" 
+                                 optionValue="_id" 
+                                 [filter]="true"
+                                 placeholder="Selecciona ejercicio..."
+                                 >
                         </p-select>
                       </div>
 
@@ -189,7 +189,7 @@
                       </div>
                       
                       <div formArrayName="sets" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                        @for (set of getSets($any(exGroup)).controls; track indexSet; let indexSet = $index) {
+                        @for (set of getSets($any(exGroup)).controls; track set; let indexSet = $index) {
                           <div [formGroupName]="indexSet" 
                           class="flex flex-col bg-white dark:bg-gray-800 px-2 py-1.5 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 relative group">
                             <div class="flex justify-between items-center mb-1">

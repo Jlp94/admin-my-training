@@ -1,4 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, computed } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { forkJoin, finalize, Observable, map } from 'rxjs';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { UserService } from '../data/user.service';
@@ -12,36 +13,24 @@ export class UserFacade {
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
 
-  // Estado reactivo (Signals)
-  private readonly _clients = signal<User[]>([]);
-  private readonly _admins = signal<User[]>([]);
-  private readonly _loading = signal(false);
+  // Estado reactivo (rxResource)
+  private readonly usersResource = rxResource({
+    stream: () => this.userService.findAll()
+  });
 
-  // Getters públicos (de solo lectura)
-  readonly clients = this._clients.asReadonly();
-  readonly admins = this._admins.asReadonly();
-  readonly loading = this._loading.asReadonly();
+  // Getters públicos computados
+  readonly clients = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'user') ?? []);
+  readonly admins = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'admin') ?? []);
+  readonly loading = this.usersResource.isLoading;
 
   // Verifica si el ID proporcionado coincide con el del usuario logueado
   isCurrentUser(userId: string): boolean {
     return this.auth.currentUserId() === userId;
   }
 
-  // Carga todos los usuarios y los clasifica por rol
+  // Fuerza la recarga de usuarios
   loadUsers() {
-    this._loading.set(true);
-    
-    forkJoin({
-      all: this.userService.findAll()
-    }).pipe(
-      finalize(() => this._loading.set(false))
-    ).subscribe({
-      next: ({ all }) => {
-        this._clients.set(all.filter(user => user.getRole === 'user'));
-        this._admins.set(all.filter(user => user.getRole === 'admin'));
-      },
-      error: () => this.showError('No se pudieron cargar los usuarios')
-    });
+    this.usersResource.reload();
   }
 
   // Guarda un usuario (creación o edición)

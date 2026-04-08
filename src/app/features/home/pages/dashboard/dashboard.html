@@ -7,38 +7,38 @@
         <i class="fa-solid fa-users text-indigo-500"></i>
         Seleccionar Cliente
       </h2>
-      <span class="text-xs text-gray-400">{{ users().length }} clientes activos</span>
+      <span class="text-xs text-gray-400">{{ facade.users().length }} clientes activos</span>
     </div>
 
     <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-      @for (user of users(); track user.getId) {
+      @for (user of facade.users(); track user.getId) {
         <button
           type="button"
           class="user-card shrink-0 flex flex-col items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all cursor-pointer min-w-[100px]"
-          [class.user-card--active]="selectedUser()?.getId === user.getId"
-          [class.user-card--inactive]="selectedUser()?.getId !== user.getId"
-          (click)="selectUser(user)"
+          [class.user-card--active]="facade.selectedUser()?.getId === user.getId"
+          [class.user-card--inactive]="facade.selectedUser()?.getId !== user.getId"
+          (click)="facade.selectUser(user)"
         >
-          @if (user.getProfile!.avatarUrl) {
-            <img [src]="user.getProfile!.avatarUrl" class="h-11 w-11 rounded-full border-2 border-white shadow-sm object-cover" alt="Avatar" />
+          @if (user.getAvatarUrl) {
+            <img [src]="user.getAvatarUrl" class="h-11 w-11 rounded-full border-2 border-white shadow-sm object-cover" alt="Avatar" />
           } @else {
             <div class="h-11 w-11 rounded-full flex items-center justify-center font-bold text-sm tracking-wider shadow-sm"
-                [class]="selectedUser()?.getId === user.getId
+                [class]="facade.selectedUser()?.getId === user.getId
                   ? 'bg-indigo-500 text-white border-2 border-indigo-300'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-2 border-gray-200 dark:border-gray-700'">
               {{ user.getInitials() }}
             </div>
           }
           <span class="text-xs font-semibold truncate max-w-[90px]"
-                [class]="selectedUser()?.getId === user.getId ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400'">
-            {{ user.getProfile!.name || 'Cliente' }}
+                [class]="facade.selectedUser()?.getId === user.getId ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-gray-400'">
+            {{ user.getName || 'Cliente' }}
           </span>
         </button>
       }
     </div>
   </section>
 
-  @if (selectedUser(); as user) {
+  @if (facade.selectedUser(); as user) {
 
     <!-- ═══════════════ CABECERA + PERIODO ═══════════════ -->
     <div class="flex flex-wrap justify-between items-center gap-3">
@@ -54,14 +54,14 @@
 
       <!-- Periodo selector -->
       <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
-        @for (opt of periodOptions; track opt.value) {
+        @for (opt of facade.periodOptions; track opt.value) {
           <button
             type="button"
             class="px-3 py-1.5 text-xs font-bold rounded-md transition-all"
-            [class]="period() === opt.value
+            [class]="facade.period() === opt.value
               ? 'bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'"
-            (click)="setPeriod(opt.value)"
+            (click)="facade.setPeriod(opt.value)"
           >
             {{ opt.label }}
           </button>
@@ -69,66 +69,36 @@
       </div>
     </div>
 
-    <!-- ═══════════════ STATS CARDS ═══════════════ -->
+    <!-- ═══════════════ STATS CARDS (DYNAMIC) ═══════════════ -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-      <!-- Peso -->
-      <div class="stat-card">
-        <div class="stat-card__icon bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500">
-          <i class="fa-solid fa-weight-scale"></i>
-        </div>
-        <div>
-          <span class="stat-card__value text-emerald-600 dark:text-emerald-400">{{ lastWeight() ?? '—' }}</span>
-          <span class="stat-card__unit">kg</span>
-        </div>
-        <span class="stat-card__label">Último Peso</span>
-      </div>
+      @for (card of facade.statsCards(); track card.label) {
+        <div class="stat-card">
+          <div class="stat-card__icon" [class]="card.colorClass">
+            <i [class]="card.icon"></i>
+          </div>
 
-      <!-- Pasos -->
-      <div class="stat-card">
-        <div class="stat-card__icon bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500">
-          <i class="fa-solid fa-shoe-prints"></i>
+          @if (card.type === 'macros') {
+            <!-- Layout Macros -->
+            <div class="flex items-baseline gap-5 flex-wrap">
+              <span class="text-[18px] font-bold text-blue-500">P {{ card.value.p }}</span>
+              <span class="text-[18px] font-bold text-amber-500">C {{ card.value.c }}</span>
+              <span class="text-[18px] font-bold text-red-400">G {{ card.value.f }}</span>
+            </div>
+          } @else {
+            <!-- Layout Standard -->
+            <div>
+              <span class="stat-card__value" [class]="card.valueColorClass">{{ card.value }}</span>
+              @if (card.unit) {
+                <span class="stat-card__unit">{{ card.unit }}</span>
+              }
+            </div>
+            @if (card.subValue) {
+              <span class="stat-card__subtitle" [title]="card.subValue">{{ card.subValue }}</span>
+            }
+          }
+          <span class="stat-card__label">{{ card.label }}</span>
         </div>
-        <div>
-          <span class="stat-card__value text-indigo-600 dark:text-indigo-400">{{ lastSteps() ?? '—' }}</span>
-        </div>
-        <span class="stat-card__label">Últimos Pasos</span>
-      </div>
-
-      <!-- Kcal Target -->
-      <div class="stat-card">
-        <div class="stat-card__icon bg-amber-50 dark:bg-amber-900/20 text-amber-500">
-          <i class="fa-solid fa-fire-flame-curved"></i>
-        </div>
-        <div>
-          <span class="stat-card__value text-amber-600 dark:text-amber-400">{{ currentMacros()?.targetKcal ?? '—' }}</span>
-          <span class="stat-card__unit">kcal</span>
-        </div>
-        <span class="stat-card__label">Objetivo Kcal</span>
-      </div>
-
-      <!-- Macros -->
-      <div class="stat-card">
-        <div class="stat-card__icon bg-blue-50 dark:bg-blue-900/20 text-blue-500">
-          <i class="fa-solid fa-chart-pie"></i>
-        </div>
-        <div class="flex gap-1.5 items-baseline flex-wrap">
-          <span class="text-[11px] font-bold text-blue-500">P:{{ currentMacros()?.protein ?? '—' }}</span>
-          <span class="text-[11px] font-bold text-amber-500">C:{{ currentMacros()?.carbs ?? '—' }}</span>
-          <span class="text-[11px] font-bold text-red-400">G:{{ currentMacros()?.fat ?? '—' }}</span>
-        </div>
-        <span class="stat-card__label">Macros (g)</span>
-      </div>
-
-      <!-- Workouts -->
-      <div class="stat-card">
-        <div class="stat-card__icon bg-purple-50 dark:bg-purple-900/20 text-purple-500">
-          <i class="fa-solid fa-dumbbell"></i>
-        </div>
-        <div>
-          <span class="stat-card__value text-purple-600 dark:text-purple-400">{{ workoutCount() }}</span>
-        </div>
-        <span class="stat-card__label">Entrenamientos</span>
-      </div>
+      }
     </div>
 
     <!-- ═══════════════ GRÁFICAS PESO + PASOS ═══════════════ -->
@@ -139,9 +109,9 @@
           <i class="fa-solid fa-weight-scale text-emerald-500"></i>
           Evolución de Peso
         </h3>
-        @if (weightChartData()?.labels?.length) {
+        @if (facade.weightChartData()?.labels?.length) {
           <div class="chart-card__body">
-            <p-chart type="line" [data]="weightChartData()!" [options]="lineChartOptions" />
+            <p-chart type="line" [data]="facade.weightChartData()!" [options]="lineChartOptions" />
           </div>
         } @else {
           <div class="chart-card__empty">
@@ -157,9 +127,9 @@
           <i class="fa-solid fa-shoe-prints text-indigo-500"></i>
           Evolución de Pasos
         </h3>
-        @if (stepsChartData()?.labels?.length) {
+        @if (facade.stepsChartData()?.labels?.length) {
           <div class="chart-card__body">
-            <p-chart type="line" [data]="stepsChartData()!" [options]="lineChartOptions" />
+            <p-chart type="line" [data]="facade.stepsChartData()!" [options]="lineChartOptions" />
           </div>
         } @else {
           <div class="chart-card__empty">
@@ -172,99 +142,40 @@
 
     <!-- ═══════════════ TABS: ENTRENAMIENTO / DIETA / CARDIO ═══════════════ -->
     <section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
-      <!-- Tab buttons -->
-      <div class="flex border-b border-gray-100 dark:border-gray-800">
-        <button type="button"
-          class="tab-btn"
-          [class.tab-btn--active]="activeTab() === 'training'"
-          (click)="setTab('training')">
-          <i class="fa-solid fa-dumbbell"></i> Entrenamiento
-        </button>
-        <button type="button"
-          class="tab-btn"
-          [class.tab-btn--active]="activeTab() === 'diet'"
-          (click)="setTab('diet')">
-          <i class="fa-solid fa-utensils"></i> Dieta
-        </button>
-        <button type="button"
-          class="tab-btn"
-          [class.tab-btn--active]="activeTab() === 'cardio'"
-          (click)="setTab('cardio')">
-          <i class="fa-solid fa-heart-pulse"></i> Cardio
-        </button>
-      </div>
+      
+      <p-tabs [value]="facade.activeTab()" (valueChange)="facade.setTab($event)">
+        <p-tablist>
+          <p-tab value="training">
+            <i class="fa-solid fa-dumbbell mr-2"></i> Entrenamiento
+          </p-tab>
+          <p-tab value="diet">
+            <i class="fa-solid fa-utensils mr-2"></i> Dieta
+          </p-tab>
+          <p-tab value="cardio">
+            <i class="fa-solid fa-heart-pulse mr-2"></i> Cardio
+          </p-tab>
+        </p-tablist>
 
-      <div class="p-5">
-        <!-- ── TAB: ENTRENAMIENTO ── -->
-        @if (activeTab() === 'training') {
-          <div class="space-y-4">
-            <div class="flex flex-wrap items-center gap-3">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Ejercicio:</label>
-              <p-select
-                [options]="exerciseList()"
-                optionLabel="name"
-                optionValue="id"
-                [ngModel]="selectedExerciseId()"
-                (ngModelChange)="selectExercise($event)"
-                placeholder="Seleccionar ejercicio..."
-                [filter]="true"
-                appendTo="body"
-                class="w-72"
-              />
-              @if (loadingExercise()) {
-                <i class="fa-solid fa-spinner fa-spin text-indigo-500"></i>
-              }
-            </div>
+        <p-tabpanels class="pt-2">
+          <!-- ── TAB: ENTRENAMIENTO ── -->
+          <p-tabpanel value="training">
+            <app-training-analytics />
+          </p-tabpanel>
 
-            @if (exerciseChartData()?.labels?.length) {
-              <div class="chart-card__body">
-                <p-chart type="line" [data]="exerciseChartData()!" [options]="exerciseChartOptions" />
-              </div>
-            } @else if (selectedExerciseId() && !loadingExercise()) {
-              <div class="chart-card__empty">
-                <i class="fa-solid fa-chart-line text-3xl text-gray-300 dark:text-gray-700"></i>
-                <span class="text-sm text-gray-400">Sin datos de progresión para este ejercicio en el periodo seleccionado</span>
-              </div>
-            } @else if (!selectedExerciseId()) {
-              <div class="chart-card__empty">
-                <i class="fa-solid fa-hand-pointer text-3xl text-gray-300 dark:text-gray-700"></i>
-                <span class="text-sm text-gray-400">Selecciona un ejercicio para ver su progresión</span>
-              </div>
-            }
-          </div>
-        }
+          <!-- ── TAB: DIETA ── -->
+          <p-tabpanel value="diet">
+            <app-diet-analytics />
+          </p-tabpanel>
 
-        <!-- ── TAB: DIETA ── -->
-        @if (activeTab() === 'diet') {
-          <div class="flex flex-col items-center justify-center py-8 gap-3 text-gray-400">
-            <i class="fa-solid fa-utensils text-4xl text-gray-300 dark:text-gray-700"></i>
-            <span class="text-sm font-medium">Módulo de seguimiento de dieta</span>
-            <p class="text-xs text-center max-w-md">
-              Aquí se mostrará el seguimiento de la dieta asignada, consumo de macros y adherencia.
-              @if (user.getProfile!.currentDietId) {
-                <br/><span class="text-indigo-500 font-bold mt-1 inline-block">Dieta activa asignada ✓</span>
-              }
-            </p>
-          </div>
-        }
-
-        <!-- ── TAB: CARDIO ── -->
-        @if (activeTab() === 'cardio') {
-          <div class="flex flex-col items-center justify-center py-8 gap-3 text-gray-400">
-            <i class="fa-solid fa-heart-pulse text-4xl text-gray-300 dark:text-gray-700"></i>
-            <span class="text-sm font-medium">Módulo de seguimiento de cardio</span>
-            <p class="text-xs text-center max-w-md">
-              Aquí se mostrará el registro de sesiones de cardio, kcal quemadas y progreso hacia el objetivo.
-              @if (user.getProfile!.cardioKcalGoal) {
-                <br/><span class="text-red-400 font-bold mt-1 inline-block">Meta: {{ user.getProfile!.cardioKcalGoal }} kcal/día</span>
-              }
-            </p>
-          </div>
-        }
-      </div>
+          <!-- ── TAB: CARDIO ── -->
+          <p-tabpanel value="cardio">
+            <app-cardio-analytics />
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
     </section>
 
-  } @else if (loading()) {
+  } @else if (facade.loading()) {
     <!-- Skeleton -->
     <div class="space-y-4">
       <p-skeleton height="100px" />

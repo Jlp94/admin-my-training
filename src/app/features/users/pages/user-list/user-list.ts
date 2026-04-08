@@ -30,18 +30,18 @@ export class UserList implements OnInit {
   protected readonly facade = inject(UserFacade);
   private readonly fb = inject(FormBuilder);
 
-  readonly showDialog = signal(false);
-  readonly isEditing = signal(false);
-  readonly saving = signal(false);
+  protected readonly showDialog = signal(false);
+  protected readonly isEditing = signal(false);
+  protected readonly saving = signal(false);
 
-  currentUser?: User; 
+  private currentUser?: User; 
 
-  readonly roleOptions = [
+  protected readonly roleOptions = [
     { label: 'Administrador', value: 'admin' },
     { label: 'Cliente (Usuario)', value: 'user' }
   ];
 
-  userForm: FormGroup = this.fb.group({
+  protected userForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.minLength(6)]], // Se validará dinámicamente
     role: ['user', Validators.required],

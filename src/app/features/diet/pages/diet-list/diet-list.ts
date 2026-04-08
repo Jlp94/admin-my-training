@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, computed, DestroyRef } from '@angular/core';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -6,70 +7,54 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { RouterLink } from '@angular/router';
 
 import { DietService } from '../../data/diet.service';
 import { UserService } from '../../../users/data/user.service';
 import { Diet } from '../../domain/diet.model';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-diet-list',
   imports: [
     TableModule, ButtonModule,
-    ToastModule, ConfirmDialogModule, TagModule, TooltipModule
+    ToastModule, ConfirmDialogModule, TagModule, TooltipModule, RouterLink
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './diet-list.html',
   styleUrl: './diet-list.scss',
 })
-export class DietList implements OnInit {
+export class DietList {
   private readonly dietService = inject(DietService);
   private readonly userService = inject(UserService);
-  private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly diets = signal<Diet[]>([]);
-  readonly users = signal<Record<string, string>>({}); // Mapeo ID -> Nombre
-  readonly loading = signal(false);
+  private readonly dietsResource = rxResource({
+    stream: () => this.dietService.findAll()
+  });
 
-  ngOnInit() {
-    this.loadUsers();
-    this.loadDiets();
-  }
+  private readonly usersResource = rxResource({
+    stream: () => this.userService.findAll()
+  });
 
-  loadUsers() {
-    this.userService.findAll().subscribe(users => {
-      const mapping: Record<string, string> = {};
-      users.forEach(u => mapping[u.getId] = u.getFullName());
-      this.users.set(mapping);
-    });
-  }
+  protected readonly diets = computed(() => this.dietsResource.value() ?? []);
+  
+  private readonly usersMap = computed(() => {
+    const mapping: Record<string, string> = {};
+    const users = this.usersResource.value() ?? [];
+    users.forEach(u => mapping[u.getId] = u.getFullName());
+    return mapping;
+  });
+
+  protected readonly loading = computed(() => this.dietsResource.isLoading() || this.usersResource.isLoading());
 
   getUserName(userId: string): string {
-    return this.users()[userId] || 'Usuario desconocido';
+    return this.usersMap()[userId] || 'Usuario desconocido';
   }
 
   loadDiets() {
-    this.loading.set(true);
-    this.dietService.findAll().subscribe({
-      next: (data) => {
-        this.diets.set(data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las dietas' });
-        this.loading.set(false);
-      }
-    });
-  }
-
-  editDiet(diet: Diet) {
-    this.router.navigate(['/diet/edit', diet._id]);
-  }
-
-  addDiet() {
-    this.router.navigate(['/diet/new']);
+    this.dietsResource.reload();
   }
 
   deleteDiet(diet: Diet) {
@@ -82,7 +67,9 @@ export class DietList implements OnInit {
       rejectButtonStyleClass: 'p-button-text',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.dietService.remove(diet._id).subscribe({
+        this.dietService.remove(diet._id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Dieta eliminada correctamente' });
             this.loadDiets();

@@ -1,5 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -25,24 +27,29 @@ import { Food, FoodGroup, NutritionalType } from '../../domain/food.model';
   providers: [MessageService, ConfirmationService],
   templateUrl: './food-list.html'
 })
-export class FoodList implements OnInit {
+export class FoodList {
   private readonly foodService = inject(FoodService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly foods = signal<Food[]>([]);
-  readonly loading = signal(false);
+  private readonly foodsResource = rxResource({
+    stream: () => this.foodService.findAll()
+  });
+
+  protected readonly foods = computed(() => this.foodsResource.value() ?? []);
+  protected readonly loading = this.foodsResource.isLoading;
   
-  readonly showDialog = signal(false);
-  readonly isEditing = signal(false);
-  readonly saving = signal(false);
+  protected readonly showDialog = signal(false);
+  protected readonly isEditing = signal(false);
+  protected readonly saving = signal(false);
 
-  foodForm: FormGroup;
-  currentFoodId?: string;
+  protected foodForm: FormGroup;
+  protected currentFoodId?: string;
 
-  readonly categoryOptions = Object.values(FoodGroup).map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }));
-  readonly typeOptions = Object.values(NutritionalType).map(t => ({ label: t.charAt(0).toUpperCase() + t.slice(1), value: t }));
+  protected readonly categoryOptions = Object.values(FoodGroup).map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }));
+  protected readonly typeOptions = Object.values(NutritionalType).map(t => ({ label: t.charAt(0).toUpperCase() + t.slice(1), value: t }));
 
   constructor() {
     this.foodForm = this.fb.group({
@@ -57,22 +64,8 @@ export class FoodList implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.loadFoods();
-  }
-
   loadFoods() {
-    this.loading.set(true);
-    this.foodService.findAll().subscribe({
-      next: (data) => {
-        this.foods.set(data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los alimentos' });
-        this.loading.set(false);
-      }
-    });
+    this.foodsResource.reload();
   }
 
   openNew() {
@@ -109,25 +102,18 @@ export class FoodList implements OnInit {
     this.saving.set(true);
     const payload = this.foodForm.value;
 
-    if (this.isEditing() && this.currentFoodId) {
-      this.foodService.update(this.currentFoodId, payload).subscribe({
-        next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Alimento actualizado' });
-          this.loadFoods();
-          this.closeDialog();
-        },
-        error: () => this.handleError()
-      });
-    } else {
-      this.foodService.create(payload).subscribe({
-        next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Alimento creado' });
-          this.loadFoods();
-          this.closeDialog();
-        },
-        error: () => this.handleError()
-      });
-    }
+    const op = this.isEditing() && this.currentFoodId
+      ? this.foodService.update(this.currentFoodId, payload)
+      : this.foodService.create(payload);
+
+    op.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Operación completada con éxito' });
+        this.loadFoods();
+        this.closeDialog();
+      },
+      error: () => this.handleError()
+    });
   }
 
   deleteFood(food: Food) {
@@ -137,13 +123,15 @@ export class FoodList implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.foodService.remove(food._id).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Alimento eliminado' });
-            this.loadFoods();
-          },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar' })
-        });
+        this.foodService.remove(food._id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Alimento eliminado' });
+              this.loadFoods();
+            },
+            error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar' })
+          });
       }
     });
   }

@@ -21,6 +21,7 @@ export class DietFormService {
       isActive: [true],
       notes: [''],
       meals: this.fb.array([]),
+      extraKcal: [0],
       totalKcal: [0],
       totalMacros: this.fb.group({
         protein: [0],

@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
@@ -25,25 +27,30 @@ import { Exercise, EquipmentType, MuscleGroup, MovementType } from '../../domain
   providers: [MessageService, ConfirmationService],
   templateUrl: './exercise-list.html'
 })
-export class ExerciseList implements OnInit {
+export class ExerciseList {
   private readonly exerciseService = inject(ExerciseService); 
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly exercises = signal<Exercise[]>([]);
-  readonly loading = signal(false);
+  private readonly exercisesResource = rxResource({
+    stream: () => this.exerciseService.findAll()
+  });
+
+  protected readonly exercises = computed(() => this.exercisesResource.value() ?? []);
+  protected readonly loading = this.exercisesResource.isLoading;
   
-  readonly showDialog = signal(false);
-  readonly isEditing = signal(false);
-  readonly saving = signal(false);
+  protected readonly showDialog = signal(false);
+  protected readonly isEditing = signal(false);
+  protected readonly saving = signal(false);
 
-  exerciseForm: FormGroup;
-  currentExerciseId?: string;
+  protected exerciseForm: FormGroup;
+  protected currentExerciseId?: string;
 
-  readonly equipmentOptions = Object.values(EquipmentType).map(e => ({ label: e, value: e }));
-  readonly muscleGroupOptions = Object.values(MuscleGroup).map(m => ({ label: m, value: m }));
-  readonly movementTypeOptions = Object.values(MovementType).map(m => ({ label: m, value: m }));
+  protected readonly equipmentOptions = Object.values(EquipmentType).map(e => ({ label: e, value: e }));
+  protected readonly muscleGroupOptions = Object.values(MuscleGroup).map(m => ({ label: m, value: m }));
+  protected readonly movementTypeOptions = Object.values(MovementType).map(m => ({ label: m, value: m }));
 
   constructor() {
     this.exerciseForm = this.fb.group({
@@ -56,22 +63,8 @@ export class ExerciseList implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.loadExercises();
-  }
-
   loadExercises() {
-    this.loading.set(true);
-    this.exerciseService.findAll().subscribe({
-      next: (data) => {
-        this.exercises.set(data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los ejercicios' });
-        this.loading.set(false);
-      }
-    });
+    this.exercisesResource.reload();
   }
 
   openNew() {
@@ -105,7 +98,9 @@ export class ExerciseList implements OnInit {
     const payload = this.exerciseForm.value;
 
     if (this.isEditing() && this.currentExerciseId) {
-      this.exerciseService.update(this.currentExerciseId, payload).subscribe({
+      this.exerciseService.update(this.currentExerciseId, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Ejercicio actualizado correctamente' });
           this.loadExercises();
@@ -114,7 +109,9 @@ export class ExerciseList implements OnInit {
         error: () => this.handleError()
       });
     } else {
-      this.exerciseService.create(payload).subscribe({
+      this.exerciseService.create(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Ejercicio creado correctamente' });
           this.loadExercises();
@@ -135,7 +132,9 @@ export class ExerciseList implements OnInit {
       rejectButtonStyleClass: 'p-button-text',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.exerciseService.remove(exercise._id).subscribe({
+        this.exerciseService.remove(exercise._id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Ejercicio eliminado' });
             this.loadExercises();

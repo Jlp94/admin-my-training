@@ -1,51 +1,40 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
-import { DietList } from './features/diet/pages/diet-list/diet-list';
-import { FoodList } from './features/diet/pages/food-list/food-list';
-import { Login } from './features/auth/pages/login/login';
-import { Dashboard } from './features/home/pages/dashboard/dashboard';
-import { UserList } from './features/users/pages/user-list/user-list';
-import { UserDetail } from './features/users/pages/user-detail/user-detail';
-import { RoutineList } from './features/training/pages/routine-list/routine-list';
-import { RoutineEdit } from './features/training/pages/routine-edit/routine-edit';
-import { ExerciseList } from './features/training/pages/exercise-list/exercise-list';
-import { CardioList } from './features/training/pages/cardio-list/cardio-list';
-import { DietEdit } from './features/diet/pages/diet-edit/diet-edit';
 import { Shell } from './shared/components/shell/shell';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'login', component: Login },
+  { path: 'login', loadComponent: () => import('./features/auth/pages/login/login').then(m => m.Login) },
   {
     path: '',
     component: Shell,
     canActivate: [authGuard],
     children: [
-      { path: 'dashboard', component: Dashboard },
+      { path: 'dashboard', loadComponent: () => import('./features/home/pages/dashboard/dashboard').then(m => m.Dashboard) },
       {
         path: 'users',
         children: [
-          { path: '', component: UserList },
-          { path: ':id', component: UserDetail }
+          { path: '', loadComponent: () => import('./features/users/pages/user-list/user-list').then(m => m.UserList) },
+          { path: ':id', loadComponent: () => import('./features/users/pages/user-detail/user-detail').then(m => m.UserDetail) }
         ]
       },
       {
         path: 'diet',
         children: [
-          { path: '', component: DietList },
-          { path: 'new', component: DietEdit },
-          { path: 'edit/:id', component: DietEdit },
-          { path: 'foods', component: FoodList }
+          { path: '', loadComponent: () => import('./features/diet/pages/diet-list/diet-list').then(m => m.DietList) },
+          { path: 'new', loadComponent: () => import('./features/diet/pages/diet-edit/diet-edit').then(m => m.DietEdit) },
+          { path: 'edit/:id', loadComponent: () => import('./features/diet/pages/diet-edit/diet-edit').then(m => m.DietEdit) },
+          { path: 'foods', loadComponent: () => import('./features/diet/pages/food-list/food-list').then(m => m.FoodList) }
         ]
       },
       {
         path: 'training',
         children: [
-          { path: 'routines', component: RoutineList },
-          { path: 'routines/new', component: RoutineEdit },
-          { path: 'routines/edit/:id', component: RoutineEdit },
-          { path: 'exercises', component: ExerciseList },
-          { path: 'cardio', component: CardioList }
+          { path: 'routines', loadComponent: () => import('./features/training/pages/routine-list/routine-list').then(m => m.RoutineList) },
+          { path: 'routines/new', loadComponent: () => import('./features/training/pages/routine-edit/routine-edit').then(m => m.RoutineEdit) },
+          { path: 'routines/edit/:id', loadComponent: () => import('./features/training/pages/routine-edit/routine-edit').then(m => m.RoutineEdit) },
+          { path: 'exercises', loadComponent: () => import('./features/training/pages/exercise-list/exercise-list').then(m => m.ExerciseList) },
+          { path: 'cardio', loadComponent: () => import('./features/training/pages/cardio-list/cardio-list').then(m => m.CardioList) }
         ]
       }
     ]

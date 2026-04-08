@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -35,6 +36,7 @@ import { UiService } from '../../../../shared/services/ui.service';
     TooltipModule,
     TextareaModule,
     FloatLabelModule,
+    RouterLink,
   ],
   providers: [MessageService],
   templateUrl: './routine-edit.html',
@@ -49,6 +51,7 @@ export class RoutineEdit implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly isEditing = signal(false);
   readonly loading = signal(false);
@@ -97,7 +100,9 @@ export class RoutineEdit implements OnInit {
 
   loadRoutine(id: string) {
     this.loading.set(true);
-    this.routineService.findOne(id).subscribe({
+    this.routineService.findOne(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (routine) => {
         this.routineForm.patchValue({
           name: routine.name,
@@ -136,7 +141,7 @@ export class RoutineEdit implements OnInit {
         block: 'start', 
         highlightSelector: '.p-card-header div',
         highlightDuration: 2000 
-      });
+  });
     }
 
     this.sessions.push(session);
@@ -165,7 +170,9 @@ export class RoutineEdit implements OnInit {
     exercises.push(exerciseGroup);
 
     // Escuchar cambios en muscleGroup para cargar ejercicios
-    exerciseGroup.get('muscleGroup')?.valueChanges.subscribe((group) => {
+    exerciseGroup.get('muscleGroup')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((group) => {
       if (group) this.loadExercisesByGroup(group);
     });
 
@@ -204,13 +211,17 @@ export class RoutineEdit implements OnInit {
   loadExercisesByGroup(group: string) {
     if (this.exercisesByGroup()[group]) return;
 
-    this.exerciseService.findAll(group).subscribe((data) => {
+    this.exerciseService.findAll(group)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data) => {
       this.exercisesByGroup.update((prev) => ({ ...prev, [group]: data }));
     });
   }
 
   loadUsers() {
-    this.userService.findAll().subscribe((users) => {
+    this.userService.findAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((users) => {
       this.users.set(users);
     });
   }
@@ -234,7 +245,9 @@ export class RoutineEdit implements OnInit {
     const payload = this.routineForm.value;
 
     if (this.isEditing() && this.routineId()) {
-      this.routineService.update(this.routineId()!, payload).subscribe({
+      this.routineService.update(this.routineId()!, payload)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -246,7 +259,9 @@ export class RoutineEdit implements OnInit {
         error: () => this.handleError(),
       });
     } else {
-      this.routineService.create(payload).subscribe({
+      this.routineService.create(payload)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
@@ -267,9 +282,5 @@ export class RoutineEdit implements OnInit {
       detail: 'Hubo un problema al conectar con el servidor',
     });
     this.saving.set(false);
-  }
-
-  goBack() {
-    this.router.navigate(['/training/routines']);
   }
 }

@@ -1,0 +1,187 @@
+<div class="space-y-6">
+
+  <!-- 1. Tarjeta de Dieta Activa y Macros (Diseño Anterior Restaurado) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    
+    <!-- Resumen Visual Macros -->
+    <div class="lg:col-span-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 flex flex-col items-center">
+      <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 w-full text-center">
+        Distribución de Macros
+      </h3>
+      <div class="flex items-center justify-center w-full h-[220px]">
+        <div class="relative flex items-center justify-center" style="width: 200px; height: 200px; max-width: 200px; max-height: 200px;">
+          @if (facade.macroChartData(); as data) {
+            <p-chart type="doughnut" [data]="data" [options]="macroChartOptions" width="200px" height="200px" />
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
+              <span class="text-2xl font-extrabold text-gray-800 dark:text-gray-100 leading-none">{{ facade.getTargetKcal() }}</span>
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mb-1.5">Kcal base</span>
+              
+              @if (facade.getExtraKcal()) {
+                <span class="text-[9px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800 shadow-sm" [pTooltip]="'Calorías extra diarias añadidas'" tooltipPosition="bottom">
+                  +{{ facade.getExtraKcal() }} extra/día
+                </span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Gestión y Detalle -->
+    <div class="lg:col-span-8 flex flex-col gap-4">
+      
+      <!-- Card Principal: Dieta Actual -->
+      <div class="bg-indigo-600 dark:bg-indigo-900/40 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/10 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-xl">
+            <i class="pi pi-receipt"></i>
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-indigo-100 uppercase tracking-wide">Plan Nutricional Activo</h4>
+            <p class="text-lg font-extrabold">{{ facade.selectedDiet() ? facade.selectedDiet()?.name : 'Sin dieta personalizada' }}</p>
+          </div>
+        </div>
+        <button pButton 
+                class="p-button-rounded p-button-secondary bg-white text-indigo-600 font-bold px-6 py-2.5 transition-transform hover:scale-105 active:scale-95"
+                [routerLink]="['/diet/edit', facade.selectedDietId()]">
+          <i class="pi pi-pencil mr-2 text-sm"></i>
+          Gestionar Dieta
+        </button>
+      </div>
+
+      <!-- Desglose de Nutrientes Global -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-4 rounded-xl group transition-all hover:bg-white dark:hover:bg-gray-800 hover:border-emerald-200">
+          <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Proteína</span>
+          <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ facade.getProtein() }}<small class="text-xs ml-1 text-gray-400 italic">objetivo</small></span>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-4 rounded-xl group transition-all hover:bg-white dark:hover:bg-gray-800 hover:border-blue-200">
+          <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Carbohidratos</span>
+          <span class="text-xl font-bold text-blue-600 dark:text-blue-400">{{ facade.getCarbs() }}<small class="text-xs ml-1 text-gray-400 italic">objetivo</small></span>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-4 rounded-xl group transition-all hover:bg-white dark:hover:bg-gray-800 hover:border-amber-200">
+          <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Grasas</span>
+          <span class="text-xl font-bold text-amber-600 dark:text-amber-400">{{ facade.getFat() }}<small class="text-xs ml-1 text-gray-400 italic">objetivo</small></span>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-4 rounded-xl group transition-all hover:bg-white dark:hover:bg-gray-800 hover:border-orange-200">
+          <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Extra Kcal</span>
+          <span class="text-xl font-bold text-orange-600 dark:text-orange-400">{{ facade.getExtraKcal() }}<small class="text-xs ml-1 text-gray-400 italic">añadidas</small></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Desglose detallado de comidas -->
+  <div class="space-y-5">
+    <div class="flex items-center justify-between px-1">
+      <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
+        <i class="pi pi-bars text-indigo-400"></i>
+        Estructura de Comidas
+      </h3>
+      <span class="text-[10px] font-bold text-gray-400 border border-gray-200 dark:border-gray-700 px-3 py-1 rounded-full uppercase tracking-widest">
+        Desglose Diario
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5">
+      @for (meal of mealSummaries(); track meal.name) {
+        <div class="meal-card bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm flex flex-col">
+          
+          <!-- Encabezado de la Comida -->
+          <div class="bg-gray-50/50 dark:bg-gray-800/30 border-b border-gray-100 dark:border-gray-800 py-3 px-6 flex items-center justify-between">
+            <h4 class="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{{ meal.name }}</h4>
+            <div class="text-right">
+              <span class="text-sm font-black text-gray-800 dark:text-gray-100">{{ meal.totals.kcal | number:'1.0-0' }}</span>
+              <span class="text-[9px] font-bold text-gray-400 uppercase ml-1 tracking-widest">kcal</span>
+            </div>
+          </div>
+
+          <!-- Contenido: Gráfica Izquierda, Alimentos Derecha -->
+          <div class="flex flex-col md:flex-row p-6 items-center md:items-stretch gap-6">
+            
+            <!-- Bloque Izquierdo: Gráfica estricta -->
+            <div class="flex flex-col items-center justify-center shrink-0 md:w-[160px] md:border-r border-gray-100 dark:border-gray-800 md:pr-6">
+              
+              <!-- Contenedor estricto para evitar expansión/solapamiento de Chart.js -->
+              <div class="relative flex items-center justify-center" style="width: 100px; height: 100px; max-width: 100px; max-height: 100px;">
+                <p-chart type="doughnut" [data]="meal.chartData" [options]="macroChartOptions" width="100px" height="100px" />
+              </div>
+              
+              <div class="flex items-center gap-4 mt-5 w-full justify-center">
+                <div class="text-center">
+                  <span class="block text-xs font-black text-emerald-500">{{ meal.totals.p | number:'1.0-0' }}g</span>
+                  <span class="text-[8px] text-gray-400 uppercase font-black tracking-widest">P</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-xs font-black text-blue-500">{{ meal.totals.c | number:'1.0-0' }}g</span>
+                  <span class="text-[8px] text-gray-400 uppercase font-black tracking-widest">C</span>
+                </div>
+                <div class="text-center">
+                  <span class="block text-xs font-black text-amber-500">{{ meal.totals.f | number:'1.0-0' }}g</span>
+                  <span class="text-[8px] text-gray-400 uppercase font-black tracking-widest">F</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bloque Derecho: Listado de Alimentos -->
+            <div class="flex-1 w-full flex flex-col justify-center">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                @for (food of meal.foods; track food.name) {
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-2xl bg-gray-50/80 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/60 hover:bg-white dark:hover:bg-gray-800 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all group gap-3">
+                    
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-800/30 shrink-0">
+                        <!-- Icono de la planta restaurado por petición del usuario -->
+                        <i class="fa-solid fa-seedling text-sm group-hover:scale-110 transition-transform"></i>
+                      </div>
+                      <div class="overflow-hidden pr-2">
+                        <p class="text-[13px] font-bold text-gray-700 dark:text-gray-200 truncate">{{ food.name }}</p>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{{ food.quantity }}g <span class="mx-1 opacity-30">|</span> {{ food.kcal | number:'1.0-0' }} kcal</p>
+                      </div>
+                    </div>
+
+                    <!-- Insignias de Macros -->
+                    <div class="flex gap-1.5 sm:justify-end shrink-0 pl-12 sm:pl-0">
+                      <span class="flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-lg text-[10px] font-bold border border-emerald-100 dark:border-emerald-500/20">
+                        P: {{ food.protein | number:'1.0-1' }}
+                      </span>
+                      <span class="flex items-center gap-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-1 rounded-lg text-[10px] font-bold border border-blue-100 dark:border-blue-500/20">
+                        C: {{ food.carbs | number:'1.0-1' }}
+                      </span>
+                      <span class="flex items-center gap-1 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-lg text-[10px] font-bold border border-amber-100 dark:border-amber-500/20">
+                        G: {{ food.fat | number:'1.0-1' }}
+                      </span>
+                    </div>
+
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+      } @empty {
+        <!-- Estados Vacíos -->
+        @if (facade.selectedUser()?.getCurrentDietId) {
+          <div class="py-16 text-center bg-gray-50/50 dark:bg-gray-900/20 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+            <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <i class="pi pi-spinner pi-spin text-indigo-500 text-xl"></i>
+            </div>
+            <p class="text-sm font-bold text-gray-500 dark:text-gray-400">Procesando plan nutricional...</p>
+            <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">Resolviendo alimentos en tiempo real</p>
+          </div>
+        } @else {
+          <div class="py-16 text-center bg-gray-50/50 dark:bg-gray-900/20 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+            <div class="w-12 h-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex items-center justify-center mx-auto mb-4">
+              <i class="pi pi-box text-gray-300 dark:text-gray-600 text-xl"></i>
+            </div>
+            <p class="text-sm font-bold text-gray-400">Sin desglose disponible</p>
+            <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">Asigne una dieta personalizada al cliente</p>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
+
+<p-toast position="bottom-right" />

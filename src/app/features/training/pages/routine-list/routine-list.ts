@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, signal, computed } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -21,45 +22,31 @@ import { UserInterface } from '../../../users/domain/user.interface';
     TagModule, 
     TooltipModule, 
     ToastModule, 
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    RouterLink
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
 })
-export class RoutineList implements OnInit {
+export class RoutineList {
   private readonly routineService = inject(RoutineService);
-  private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
 
-  readonly routines = signal<Routine[]>([]);
-  readonly loading = signal(false);
+  private readonly routinesResource = rxResource({
+    stream: () => this.routineService.findAll()
+  });
+
+  protected readonly routines = computed(() => this.routinesResource.value() ?? []);
+  protected readonly loading = this.routinesResource.isLoading;
   
   // Mapa para cachear los usuarios asignados a cada rutina expandida
-  readonly assignedUsersMap = signal<Record<string, User[]>>({ });
-  readonly loadingUsers = signal<Record<string, boolean>>({ });
-
-  ngOnInit() {
-    this.loadRoutines();
-  }
+  protected readonly assignedUsersMap = signal<Record<string, User[]>>({ });
+  protected readonly loadingUsers = signal<Record<string, boolean>>({ });
 
   loadRoutines() {
-    this.loading.set(true);
-    this.routineService.findAll().subscribe({
-      next: (data) => {
-        this.routines.set(data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error', 
-          detail: 'No se pudieron cargar las rutinas' 
-        });
-        this.loading.set(false);
-      }
-    });
+    this.routinesResource.reload();
   }
 
   onRowExpand(event: any) {
@@ -78,14 +65,6 @@ export class RoutineList implements OnInit {
         this.loadingUsers.update(prev => ({ ...prev, [routine._id]: false }));
       }
     });
-  }
-
-  goToNew() {
-    this.router.navigate(['/training/routines/new']);
-  }
-
-  editRoutine(routine: Routine) {
-    this.router.navigate(['/training/routines/edit', routine._id]);
   }
 
   deleteRoutine(routine: Routine) {

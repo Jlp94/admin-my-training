@@ -7,7 +7,7 @@
       </h1>
       <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Administra las rutinas maestras y las asignaciones de usuarios</p>
     </div>
-    <p-button label="Nueva Rutina" icon="fa-solid fa-plus" (onClick)="goToNew()" severity="info"></p-button>
+    <p-button label="Nueva Rutina" icon="fa-solid fa-plus" routerLink="/training/routines/new" severity="info"></p-button>
   </div>
 
   <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
@@ -21,8 +21,7 @@
       (onRowExpand)="onRowExpand($event)"
       [showCurrentPageReport]="true"
       currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} rutinas"
-      class="flex-1 flex flex-col h-full min-h-0 w-full"
-      class="p-datatable-sm p-datatable-flex-bottom"
+      class="flex-1 flex flex-col h-full min-h-0 w-full p-datatable-sm p-datatable-flex-bottom"
       responsiveLayout="scroll">
       
       <ng-template pTemplate="header">
@@ -58,7 +57,7 @@
           <td>
             <div class="flex justify-center gap-1">
               <p-button icon="fa-solid fa-pen" [rounded]="true" [text]="true" severity="info" 
-                        (onClick)="editRoutine(routine)" pTooltip="Editar Rutina"></p-button>
+                        [routerLink]="['/training/routines/edit', routine._id]" pTooltip="Editar Rutina"></p-button>
               <p-button icon="fa-solid fa-trash" [rounded]="true" [text]="true" severity="danger" 
                         (onClick)="deleteRoutine(routine)" pTooltip="Eliminar Rutina"></p-button>
             </div>

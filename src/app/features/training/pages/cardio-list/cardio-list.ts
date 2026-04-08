@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
@@ -23,23 +24,28 @@ import { Cardio, CardioType } from '../../domain/cardio.model';
   providers: [MessageService, ConfirmationService],
   templateUrl: './cardio-list.html'
 })
-export class CardioList implements OnInit {
+export class CardioList {
   private readonly cardioService = inject(CardioService);
   private readonly fb = inject(FormBuilder);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly cardios = signal<Cardio[]>([]);
-  readonly loading = signal(false);
+  private readonly cardiosResource = rxResource({
+    stream: () => this.cardioService.findAll()
+  });
+
+  protected readonly cardios = computed(() => this.cardiosResource.value() ?? []);
+  protected readonly loading = this.cardiosResource.isLoading;
   
-  readonly showDialog = signal(false);
-  readonly isEditing = signal(false);
-  readonly saving = signal(false);
+  protected readonly showDialog = signal(false);
+  protected readonly isEditing = signal(false);
+  protected readonly saving = signal(false);
 
-  cardioForm: FormGroup;
-  currentCardioId?: string;
+  protected cardioForm: FormGroup;
+  protected currentCardioId?: string;
 
-  readonly typeOptions = Object.values(CardioType).map(t => ({ label: t.toUpperCase(), value: t }));
+  protected readonly typeOptions = Object.values(CardioType).map(t => ({ label: t.toUpperCase(), value: t }));
 
   constructor() {
     this.cardioForm = this.fb.group({
@@ -50,7 +56,7 @@ export class CardioList implements OnInit {
     });
   }
 
-  get instruccionesFormArray() {
+  protected get instruccionesFormArray() {
     return this.cardioForm.get('instrucciones') as FormArray;
   }
 
@@ -65,22 +71,8 @@ export class CardioList implements OnInit {
     this.instruccionesFormArray.removeAt(index);
   }
 
-  ngOnInit() {
-    this.loadCardios();
-  }
-
   loadCardios() {
-    this.loading.set(true);
-    this.cardioService.findAll().subscribe({
-      next: (data) => {
-        this.cardios.set(data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las actividades de cardio' });
-        this.loading.set(false);
-      }
-    });
+    this.cardiosResource.reload();
   }
 
   openNew() {
@@ -122,7 +114,9 @@ export class CardioList implements OnInit {
     const payload = this.cardioForm.value;
 
     if (this.isEditing() && this.currentCardioId) {
-      this.cardioService.update(this.currentCardioId, payload).subscribe({
+      this.cardioService.update(this.currentCardioId, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Actualizado correctamente' });
           this.loadCardios();
@@ -131,7 +125,9 @@ export class CardioList implements OnInit {
         error: () => this.handleError()
       });
     } else {
-      this.cardioService.create(payload).subscribe({
+      this.cardioService.create(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Creado correctamente' });
           this.loadCardios();
@@ -152,7 +148,9 @@ export class CardioList implements OnInit {
       rejectButtonStyleClass: 'p-button-text',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.cardioService.remove(cardio._id).subscribe({
+        this.cardioService.remove(cardio._id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Actividad eliminada' });
             this.loadCardios();

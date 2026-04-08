@@ -30,7 +30,7 @@
               icon="fa-solid fa-arrow-left"
               [raised]="true"
               severity="secondary"
-              (onClick)="cancel()"
+              routerLink="/diet"
               label="Volver"
               pTooltip="Salir sin guardar"
             ></p-button>
@@ -39,7 +39,7 @@
 
         <!-- CONFIGURACIÓN BÁSICA -->
         <p-card class="border-none shadow-sm overflow-hidden rounded-3xl">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-2">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-2">
             <div class="flex flex-col gap-2">
               <label class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1"
                 >Cliente</label
@@ -69,14 +69,28 @@
             </div>
             <div class="flex flex-col gap-2">
               <label class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] ml-1"
-                >Nombre</label
+                >Nombre del Plan</label
               >
               <input
                 pInputText
                 formControlName="name"
                 placeholder="Ej: Dieta A..."
-                class="w-full border-none bg-slate-50 dark:bg-gray-800/50 rounded-xl font-bold px-4 py-3"
               />
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="text-[10px] font-black text-orange-600 uppercase tracking-[0.2em] ml-1"
+                >Extra Kcal Diarias</label
+              >
+              <p-inputNumber
+                formControlName="extraKcal"
+                [min]="0"
+                [max]="5000"
+                [showButtons]="true"
+                buttonLayout="horizontal"
+                spinnerMode="horizontal"
+                incrementButtonIcon="pi pi-plus"
+                decrementButtonIcon="pi pi-minus"
+              ></p-inputNumber>
             </div>
           </div>
           <div class="mt-4 p-2">
@@ -98,7 +112,7 @@
         <!-- COMIDAS -->
         <div formArrayName="meals" class="space-y-6">
           <p-accordion [multiple]="true" [value]="['0']">
-            @for (meal of meals.controls; track mealIndex; let mealIndex = $index) {
+            @for (meal of meals.controls; track meal; let mealIndex = $index) {
               <p-accordion-panel
                 [value]="mealIndex.toString()"
                 [formGroupName]="mealIndex"
@@ -116,7 +130,6 @@
                         pInputText
                         formControlName="name"
                         placeholder="Nombre..."
-                        class="bg-transparent border-none font-black text-xl text-gray-800 dark:text-gray-100 focus:ring-0 w-64 p-0 shadow-none uppercase tracking-tight"
                         (click)="$event.stopPropagation()"
                       />
                     </div>
@@ -130,128 +143,102 @@
                 </p-accordion-header>
 
                 <p-accordion-content>
-                  <div formArrayName="foods" class="space-y-4 py-2">
-                    @for (
-                      foodGroup of getFoods(mealIndex).controls;
-                      track foodIndex;
-                      let foodIndex = $index
-                    ) {
-                      <div
-                        [formGroupName]="foodIndex"
-                        class="group flex flex-col gap-3 p-4 bg-slate-50/80 dark:bg-gray-800/20 rounded-3xl border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800/40 transition-all shadow-sm"
-                      >
-                        <div class="flex flex-col md:flex-row items-end gap-3">
-                          <div class="w-full md:w-52 flex flex-col gap-1">
-                            <label
-                              class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1"
-                              >Tipo</label
-                            >
-                            <p-select
-                              [options]="dietFormService.nutritionalTypes"
-                              formControlName="nutritionalType"
-                              placeholder="Tipo..."
-                              class="w-full border-none shadow-sm bg-white dark:bg-gray-900 rounded-xl"
-                              appendTo="body"
-                            ></p-select>
-                          </div>
+                  <!-- ALIMENTOS DE LA COMIDA (GRID COMPACTO) -->
+                  <div class="mt-4 pl-4 border-l-2 border-emerald-200 dark:border-emerald-800">
+                    <div class="flex justify-between items-center mb-4">
+                      <span class="text-xs font-bold text-emerald-600 uppercase tracking-widest italic flex items-center gap-2">
+                        <i class="fa-solid fa-apple-whole"></i>
+                        Alimentos Programados
+                      </span>
+                      <p-button label="Añadir Alimento" icon="fa-solid fa-plus" size="small" [raised]="true" severity="secondary" (onClick)="addFoodToMeal(mealIndex)" pTooltip="Añadir alimento a la comida"></p-button>
+                    </div>
 
-                          <div class="flex-1 w-full flex flex-col gap-1">
-                            <label
-                              class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1"
-                              >Alimento</label
-                            >
-                            <p-select
-                              [options]="getFoodsByType(foodGroup.get('nutritionalType')?.value)"
-                              formControlName="foodId"
-                              optionLabel="name"
-                              optionValue="_id"
-                              [filter]="true"
-                              filterBy="name"
-                              placeholder="Seleccionar..."
-                              class="w-full border-none shadow-sm bg-white dark:bg-gray-900 rounded-xl"
-                              appendTo="body"
-                            >
-                              <ng-template let-food pTemplate="item">
-                                <div class="flex justify-between items-center w-full px-1">
-                                  <span class="font-bold text-gray-800 dark:text-gray-200">{{
-                                    food.name
-                                  }}</span>
-                                  <span
-                                    class="text-[9px] px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full font-black uppercase"
-                                    >{{ food.kcal }} kcal</span
-                                  >
-                                </div>
-                              </ng-template>
-                            </p-select>
+                    <div formArrayName="foods" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 py-2">
+                      @for (
+                        foodGroup of getFoods(mealIndex).controls;
+                        track foodGroup;
+                        let foodIndex = $index
+                      ) {
+                        <div
+                          [formGroupName]="foodIndex"
+                          class="flex flex-col bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 relative group transition-all hover:border-emerald-300 dark:hover:border-emerald-600"
+                        >
+                          <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-black text-emerald-500 uppercase tracking-wider">Alimento {{ foodIndex + 1 }}</span>
+                            <p-button icon="fa-solid fa-xmark text-[14px]" [text]="true" severity="danger" 
+                            (onClick)="removeFoodFromMeal(mealIndex, foodIndex)"></p-button>
                           </div>
+                          
+                          <div class="flex flex-col gap-3">
+                            <!-- Tipo -->
+                            <div class="flex flex-col">
+                              <label class="text-[8px] font-black text-green-800 uppercase tracking-widest ml-1 mb-0.5">Tipo</label>
+                              <p-select
+                                [options]="dietFormService.nutritionalTypes"
+                                formControlName="nutritionalType"
+                                placeholder="Filtrar por..."
+                                class="w-full border-none shadow-sm bg-slate-50 dark:bg-gray-900 rounded-lg p-inputtext-sm text-xs"
+                                [showClear]="true"
+                                appendTo="body"
+                              ></p-select>
+                            </div>
 
-                          <div class="w-full md:w-28 flex flex-col gap-1">
-                            <label
-                              class="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1"
-                              >Cant. (g)</label
-                            >
-                            <p-inputNumber
-                              formControlName="quantity"
-                              [min]="1"
-                              fluid
-                              suffix=" g"
-                              class="p-inputnumber-sm w-full border-none shadow-sm bg-white dark:bg-gray-900 rounded-xl overflow-hidden"
-                            ></p-inputNumber>
-                          </div>
-
-                          <div class="flex items-end pb-0.5">
-                            <p-button
-                              icon="fa-solid fa-xmark text-sm"
-                              [text]="true"
-                              severity="danger"
-                              (onClick)="removeFoodFromMeal(mealIndex, foodIndex)"
-                            ></p-button>
-                          </div>
-                        </div>
-
-                        <!-- DESGLOSE SUTIL -->
-                        @if (
-                          getFoodMetrics(
-                            foodGroup.get('foodId')?.value,
-                            foodGroup.get('quantity')?.value
-                          );
-                          as metrics
-                        ) {
-                          <div
-                            class="flex flex-wrap items-center gap-4 px-4 py-2 bg-white/60 dark:bg-gray-900/40 rounded-xl text-[10px] font-bold border border-emerald-100/30 dark:border-emerald-800/20"
-                          >
-                            <span class="text-emerald-600 uppercase tracking-widest">{{
-                              getFoodName(foodGroup.get('foodId')?.value)
-                            }}</span>
-                            <div class="h-3 w-px bg-slate-100 dark:bg-gray-700"></div>
-                            <div class="flex gap-4 text-gray-500">
-                              <span
-                                ><span class="opacity-50 mr-1">KC:</span>{{ metrics.kcal }}</span
+                            <!-- Alimento -->
+                            <div class="flex flex-col">
+                              <label class="text-[8px] font-black text-green-800 uppercase tracking-widest ml-1 mb-0.5">Alimento</label>
+                              <p-select
+                                [options]="getFoodsByType(foodGroup.get('nutritionalType')?.value)"
+                                formControlName="foodId"
+                                optionLabel="name"
+                                optionValue="_id"
+                                [filter]="true"
+                                filterBy="name"
+                                placeholder="Selecciona..."
+                                class="w-full border-none shadow-sm bg-slate-50 dark:bg-gray-900 rounded-lg p-inputtext-sm text-xs"
+                                appendTo="body"
                               >
-                              <span
-                                ><span class="opacity-50 mr-1">P:</span>{{ metrics.protein }}g</span
-                              >
-                              <span
-                                ><span class="opacity-50 mr-1">C:</span>{{ metrics.carbs }}g</span
-                              >
-                              <span><span class="opacity-50 mr-1">G:</span>{{ metrics.fat }}g</span>
+                                <ng-template let-food pTemplate="item">
+                                  <div class="flex flex-col justify-center w-full px-1">
+                                    <span class="font-bold text-gray-800 dark:text-gray-200 text-xs">{{ food.name }}</span>
+                                    <span class="text-[9px] text-emerald-600 font-black uppercase">{{ food.kcal }} kcal/100g</span>
+                                  </div>
+                                </ng-template>
+                              </p-select>
+                            </div>
+
+                            <!-- Cantidad -->
+                            <div class="flex flex-col">
+                              <label class="text-[8px] font-black text-green-800 uppercase tracking-widest ml-1 mb-0.5">Cant. (g)</label>
+                              <p-inputNumber
+                                formControlName="quantity"
+                                [min]="1"
+                                fluid
+                                suffix=" g"
+                                class="p-inputnumber-sm w-full border-none shadow-sm bg-slate-50 dark:bg-gray-900 rounded-lg overflow-hidden"
+                              ></p-inputNumber>
                             </div>
                           </div>
-                        }
-                      </div>
-                    }
 
-                    <!-- BOTÓN AÑADIR ALIMENTO CENTRADO -->
-                    <div class="flex justify-center mt-2">
-                      <p-button
-                        label="Añadir Alimento"
-                        [outlined]="true"
-                        icon="fa-solid fa-plus"
-                        severity="success"
-                        [raised]="true"
-                        (onClick)="addFoodToMeal(mealIndex)"
-                        class="px-8 py-2 tracking-widest"
-                      ></p-button>
+                          <!-- DESGLOSE SUTIL -->
+                          @if (
+                            getFoodMetrics(
+                              foodGroup.get('foodId')?.value,
+                              foodGroup.get('quantity')?.value
+                            );
+                            as metrics
+                          ) {
+                            <div class="mt-3 bg-emerald-50/50 dark:bg-emerald-900/10 p-2 rounded-xl text-[12px] font-bold border border-emerald-100/50 dark:border-emerald-800/30 flex justify-between">
+                              <span class="text-emerald-700 dark:text-emerald-400 font-black">
+                                <i class="fa-solid fa-fire mr-1"></i>{{ metrics.kcal }}</span>
+                              <div class="flex gap-2">
+                                <span class="text-red-500">P {{ metrics.protein }}</span>
+                                <span class="text-yellow-600">C {{ metrics.carbs }}</span>
+                                <span class="text-blue-500">G {{ metrics.fat }}</span>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
                     </div>
                   </div>
                 </p-accordion-content>
@@ -277,11 +264,11 @@
       <div class="lg:col-span-2 lg:sticky lg:top-8 space-y-4">
         <!-- CARD TRANSLÚCIDA ESTRECHA -->
         <div
-          class="relative overflow-hidden bg-green-200/30 dark:bg-green-950/20 backdrop-blur-xl rounded-4xl border-2 border-dashed border-green-500/40 shadow-xl shadow-green-500/5 flex flex-col items-stretch"
+          class="relative overflow-hidden bg-blue-100/30 dark:bg-blue-950/20 backdrop-blur-xl rounded-4xl border-2 border-dashed border-blue-500/40 shadow-xl shadow-blue-500/5 flex flex-col items-stretch"
         >
           <div class="relative p-4">
             <h3
-              class="text-[15px] font-black uppercase tracking-[0.2em] text-green-600 dark:text-green-400 mb-3 flex items-center gap-2 justify-center"
+              class="text-[15px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2 justify-center"
             >
               <i class="fa-solid fa-chart-simple"></i>
               Resumen
@@ -289,12 +276,12 @@
 
             <!-- KCAL ULTRA-COMPACTO -->
             <div
-              class="flex flex-col items-center justify-center py-4 mb-4 bg-green-500/15 dark:bg-white/5 rounded-3xl border border-green-500/10"
+              class="flex flex-col items-center justify-center py-4 mb-4 bg-blue-500/15 dark:bg-white/5 rounded-3xl border border-blue-500/10"
             >
               <span class="text-3xl font-black text-gray-800 dark:text-white tracking-tighter">{{
                 totals().kcal
               }}</span>
-              <span class="text-[8px] font-black uppercase tracking-widest text-green-600/60 mt-0.5"
+              <span class="text-[12px] font-black uppercase tracking-widest text-blue-600 mt-0.5"
                 >kcal totales</span
               >
             </div>
@@ -302,45 +289,60 @@
             <!-- MACROS EN COLUMNA -->
             <div class="space-y-2">
               <div
-                class="flex justify-between items-center bg-white/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700"
+                class="flex justify-between items-center bg-red-200/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-red-200/40 dark:border-red-200/40"
               >
-                <span class="text-[9px] font-black uppercase tracking-widest text-red-500/80"
+                <span class="text-[12px] font-black uppercase tracking-widest text-red-500"
                   >Pro</span
                 >
                 <span class="text-sm font-black text-gray-800 dark:text-gray-100"
                   >{{ totals().protein
-                  }}<span class="text-[8px] ml-0.5 opacity-30 font-bold">g</span></span
+                  }}<span class="text-[12px] ml-0.5 opacity-30 font-bold">g</span></span
                 >
               </div>
 
               <div
-                class="flex justify-between items-center bg-white/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700"
+                class="flex justify-between items-center bg-yellow-200/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-yellow-200/40 dark:border-yellow-200/40"
               >
-                <span class="text-[9px] font-black uppercase tracking-widest text-yellow-500/80"
+                <span class="text-[12px] font-black uppercase tracking-widest text-yellow-600"
                   >CH</span
                 >
                 <span class="text-sm font-black text-gray-800 dark:text-gray-100"
                   >{{ totals().carbs
-                  }}<span class="text-[8px] ml-0.5 opacity-30 font-bold">g</span></span
+                  }}<span class="text-[12px] ml-0.5 opacity-30 font-bold">g</span></span
                 >
               </div>
 
               <div
-                class="flex justify-between items-center bg-white/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700"
+                class="flex justify-between items-center bg-blue-200/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-blue-200/40 dark:border-blue-200/40"
               >
-                <span class="text-[9px] font-black uppercase tracking-widest text-blue-500/80"
+                <span class="text-[12px] font-black uppercase tracking-widest text-blue-500"
                   >Grasa</span
                 >
                 <span class="text-sm font-black text-gray-800 dark:text-gray-100"
                   >{{ totals().fat
-                  }}<span class="text-[8px] ml-0.5 opacity-30 font-bold">g</span></span
+                  }}<span class="text-[12px] ml-0.5 opacity-30 font-bold">g</span></span
                 >
               </div>
+
+              @if (dietForm.get('extraKcal')?.value) {
+                <div
+                  class="flex justify-between items-center bg-orange-500/40 dark:bg-orange-500/20 px-3 py-2 rounded-xl border border-orange-200/50 dark:border-orange-500/30"
+                >
+                  <span
+                    class="text-[12px] font-black uppercase tracking-widest text-orange-700 dark:text-orange-400"
+                    >Extra</span
+                  >
+                  <span class="text-sm font-black text-orange-700 dark:text-orange-300"
+                    >+{{ dietForm.get('extraKcal')?.value
+                    }}<span class="text-[12px] ml-0.5 opacity-50 font-bold italic">kcal</span></span
+                  >
+                </div>
+              }
             </div>
           </div>
 
           <!-- BOTÓN GUARDAR FULL WIDTH -->
-          <div class="p-3 bg-emerald-500/5 border-emerald-500/5">
+          <div class="px-5 pb-3">
             <p-button
               [label]="isEditing() ? 'OK' : 'Guardar'"
               (onClick)="save()"
@@ -350,6 +352,7 @@
               severity="success"
               styleClass="w-full tracking-widest"
             >
+              <i class="pi pi-check-circle"></i>
             </p-button>
           </div>
         </div>

@@ -29,6 +29,7 @@ export interface UserMacrosInterface {
   protein: number;
   carbs: number;
   fat: number;
+  extraKcal?: number;
 }
 
 export interface UserNeatInterface {

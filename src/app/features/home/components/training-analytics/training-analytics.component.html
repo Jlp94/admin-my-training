@@ -1,0 +1,171 @@
+<div class="space-y-6">
+  
+  <!-- 1. Resumen de Adherencia Semanal -->
+  @if (facade.weekSummary(); as week) {
+    <div class="week-selector">
+      <p-button type="button" class="week-selector__nav" 
+              (click)="facade.changeWeek(-1)" 
+              title="Semana Anterior"
+              [raised]="true">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </p-button>
+      
+      <div class="week-selector__content">
+        <span class="week-selector__range">Semana del {{ week.start }} al {{ week.end }}</span>
+        <span class="week-selector__stats">
+          Completados: <strong>{{ week.actual }} / {{ week.scheduled || '--' }}</strong> entrenos
+        </span>
+      </div>
+      
+      <p-button type="button" class="week-selector__nav" 
+              (click)="facade.changeWeek(1)" 
+              [disabled]="facade.weekOffset() >= 0"
+              title="Semana Siguiente"
+              [raised]="true">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </p-button>
+    </div>
+  }
+
+  <!-- 2. Selector de Sesión (RUTINA) -->
+  @if (facade.selectedRoutine(); as routine) {
+    <div class="pt-2">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-indigo-400"></i>
+          Sesiones de la Rutina: {{ routine.name }}
+        </h3>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        @for (session of routine.sessions; track $index) {
+          <button type="button" 
+                  class="px-4 py-2 rounded-lg text-xs font-bold transition-all border-2"
+                  [class]="facade.activeSessionIndex() === $index 
+                    ? 'bg-indigo-500 text-white border-indigo-400 shadow-sm' 
+                    : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-100 dark:border-gray-700 hover:border-indigo-200'"
+                  (click)="facade.setSession($index)">
+            Día {{ $index + 1 }}: {{ session.routineType }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- 3. Buscador de Ejercicios -->
+  <div class="flex flex-wrap items-center gap-3 border-t border-gray-100 dark:border-gray-800 pt-5">
+    <div class="flex flex-col gap-1">
+      <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Explorador de Ejercicios:</label>
+      <p class="text-[9px] text-gray-400 font-medium">Vacío para ver el mosaico general</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <p-select
+        [options]="facade.exerciseList()"
+        optionLabel="name"
+        optionValue="id"
+        [ngModel]="facade.selectedExerciseId()"
+        (ngModelChange)="facade.selectExercise($event)"
+        placeholder="Seleccionar ejercicio..."
+        [filter]="true"
+        [showClear]="true"
+        appendTo="body"
+        class="w-72"
+      />
+      @if (facade.loadingExercise()) {
+        <i class="fa-solid fa-spinner fa-spin text-indigo-500"></i>
+      }
+    </div>
+  </div>
+
+  <!-- 4. Área de Gráficas (Mosaico o Zoom) -->
+  @if (facade.selectedExerciseId()) {
+    <!-- MODO ZOOM: Solo el ejercicio seleccionado -->
+    @if (facade.exerciseChartData()?.labels?.length) {
+      <div class="chart-card border-indigo-100! dark:border-indigo-900/30!">
+        <div class="chart-card__title">
+          <i class="fa-solid fa-expand text-indigo-500"></i>
+          Vista Detallada: Progresión Histórica
+        </div>
+        <div class="chart-card__body">
+          <p-chart type="line" [data]="facade.exerciseChartData()!" [options]="exerciseChartOptions" />
+        </div>
+      </div>
+    } @else if (!facade.loadingExercise()) {
+      <div class="chart-card__empty">
+        <i class="fa-solid fa-chart-line text-3xl text-gray-300 dark:text-gray-700"></i>
+        <span class="text-sm text-gray-400">Sin datos de progresión para este ejercicio</span>
+      </div>
+    }
+  } @else {
+    <!-- MODO MOSAICO: Todos los ejercicios de la sesión -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      @for (chartObj of facade.sessionExerciseCharts() | keyvalue; track chartObj.key) {
+        <div class="chart-card hover:border-indigo-200 transition-all hover:-translate-y-1 cursor-pointer" 
+            (click)="facade.selectExercise(chartObj.key)">
+          <div class="chart-card__title justify-between">
+            <span class="truncate flex items-center gap-2">
+              <i class="fa-solid fa-dumbbell text-xs text-indigo-400"></i>
+              {{ chartObj.value.name }}
+            </span>
+            <i class="fa-solid fa-magnifying-glass-plus text-[10px] text-gray-300"></i>
+          </div>
+          <div class="chart-card__body h-[180px]! p-2!">
+            <p-chart type="line" [data]="chartObj.value.data" [options]="miniChartOptions" />
+          </div>
+        </div>
+      } @empty {
+        @if (!facade.loadingExercise()) {
+          <div class="col-span-full py-12 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-2xl text-gray-400">
+            <i class="fa-solid fa-layer-group text-4xl mb-4 opacity-20"></i>
+            <p class="text-sm font-medium">No hay datos de progresión registrados para esta sesión</p>
+            <p class="text-[10px] mt-1 text-gray-300 uppercase">Selecciona un usuario con registros para ver su evolución</p>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- 5. Actividad Detallada de la Semana (Log de Ejercicios) -->
+  <div class="border-t border-gray-100 dark:border-gray-800 pt-6">
+    <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>
+      Actividad de la Semana
+    </h3>
+    
+    <div class="space-y-4">
+      @for (log of facade.currentWeekLogs(); track log.doneAt) {
+        <div class="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-4 border border-gray-100 dark:border-gray-700/50">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded">
+              {{ facade.dashboardService.formatDate(log.doneAt) }}
+            </span>
+            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-tight flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-emerald-500"></i> Completado
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            @for (exLog of log.exerciseLogs; track exLog.exerciseId) {
+              <div class="flex flex-col gap-1.5 p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-gray-700 dark:text-gray-200">{{ exLog.name }}</span>
+                  <span class="text-[10px] font-bold text-gray-400">{{ exLog.sets.length }} series</span>
+                </div>
+                <div class="flex flex-wrap gap-1">
+                  @for (t of exLog.target; track t) {
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-blue-500 text-white shadow-sm shadow-blue-500/20">
+                      {{ t }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="py-10 text-center bg-gray-50 dark:bg-gray-800/20 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+          <p class="text-xs text-gray-400 italic">No hay registros de entrenamiento para esta semana</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
