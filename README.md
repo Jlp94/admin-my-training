@@ -1,59 +1,55 @@
-# AdminMyTraining
+# MyTraining - Admin Panel 🖥️
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+Este es el panel administrativo de MyTraining, diseñado para que entrenadores y administradores gestionen usuarios, dietas y rutinas. Construido con **Angular 21** y **PrimeNG**.
 
-## Development server
+---
 
-To start a local development server, run:
+## 🚀 Puesta en Marcha
 
+Sigue estos pasos para ejecutar el panel en tu entorno local.
+
+### Requisitos Previos
+*   **Node.js** (v18.0.0+)
+*   **pnpm** (instalado globalmente: `npm install -g pnpm`)
+*   **Angular CLI** (opcional: `npm install -g @angular/cli`)
+
+### Instalación
+1.  Entra en la carpeta del proyecto:
+    ```bash
+    cd Admin/admin-my-training
+    ```
+2.  Instala las dependencias:
+    ```bash
+    pnpm install
+    ```
+
+### Ejecución
+Para iniciar el servidor de desarrollo, ejecuta:
+```bash
+pnpm start
+```
+O si prefieres usar el comando nativo de Angular:
 ```bash
 ng serve
 ```
+La aplicación se abrirá en `http://localhost:4200`.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## 🏗️ Tecnología y Diseño
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+*   **Angular 21**: Uso de componentes standalone y señales.
+*   **PrimeNG v21**: Biblioteca de componentes de UI profesional.
+*   **Tailwind CSS v4**: Utilidades para el diseño y layout.
+*   **Chart.js**: Paneles de analíticas y progreso visual.
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 📁 Estructura del Proyecto
 
-```bash
-ng generate --help
-```
+*   `src/app/features/`: Módulos de negocio (usuarios, rutinas, dietas, dashboard).
+*   `src/app/core/`: Servicios esenciales, interceptores y guardia de autenticación.
+*   `src/app/shared/`: Componentes, utilidades y servicios compartidos.
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+© 2026 - Proyecto de Fin de Ciclo. Desarrollado por Jose Luis Prieto.
