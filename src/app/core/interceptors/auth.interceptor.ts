@@ -16,7 +16,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Si recibimos un 401, la sesión ha expirado o es inválida
       if (error.status === 401) {
         authService.logout();
       }
