@@ -4,6 +4,7 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { cacheInterceptor } from './core/interceptors/cache.interceptor';
 import { routes } from './app.routes';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { definePreset } from '@primeuix/themes';
@@ -65,7 +66,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor, errorInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor, errorInterceptor, cacheInterceptor])),
     providePrimeNG({
       ripple: true,
       theme: {
