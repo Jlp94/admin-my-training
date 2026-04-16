@@ -21,6 +21,7 @@ import { Exercise } from '../../domain/exercise.model';
 import { User } from '../../../users/domain/user.model';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { UiService } from '../../../../shared/services/ui.service';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-routine-edit',
@@ -37,6 +38,7 @@ import { UiService } from '../../../../shared/services/ui.service';
     TextareaModule,
     FloatLabelModule,
     RouterLink,
+    SpinnerComponent
   ],
   providers: [MessageService],
   templateUrl: './routine-edit.html',

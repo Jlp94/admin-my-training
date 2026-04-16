@@ -5,13 +5,13 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { UserService } from '../data/user.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { User } from '../domain/user.model';
+import { UiService } from '../../../shared/services/ui.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserFacade {
   private readonly userService = inject(UserService);
   private readonly auth = inject(AuthService);
-  private readonly messageService = inject(MessageService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly uiService = inject(UiService);
 
   // Estado reactivo (rxResource)
   private readonly usersResource = rxResource({
@@ -19,7 +19,8 @@ export class UserFacade {
   });
 
   // Getters públicos computados
-  readonly clients = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'user') ?? []);
+  readonly activeClients = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'user' && u.getIsActive) ?? []);
+  readonly inactiveClients = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'user' && !u.getIsActive) ?? []);
   readonly admins = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'admin') ?? []);
   readonly loading = this.usersResource.isLoading;
 
@@ -28,9 +29,9 @@ export class UserFacade {
     return this.auth.currentUserId() === userId;
   }
 
-  // Fuerza la recarga de usuarios
+
   loadUsers() {
-    this.usersResource.reload();
+    this.usersResource.reload(); // Fuerza la recarga de usuarios
   }
 
   // Guarda un usuario (creación o edición)
@@ -41,7 +42,7 @@ export class UserFacade {
       // EDICIÓN
       return this.userService.update(existingUser.getId, payload).pipe(
         map(user => {
-            this.showSuccess('Usuario actualizado correctamente');
+            this.uiService.showSuccess('Usuario actualizado correctamente');
             this.loadUsers();
             return user;
         })
@@ -50,7 +51,7 @@ export class UserFacade {
       // CREACIÓN
       return this.userService.create(payload).pipe(
         map(user => {
-            this.showSuccess('Usuario creado correctamente');
+            this.uiService.showSuccess('Usuario creado correctamente');
             this.loadUsers();
             return user;
         })
@@ -61,64 +62,50 @@ export class UserFacade {
   // Elimina un usuario con confirmación previa
   delete(user: User) {
     if (this.isCurrentUser(user.getId)) {
-      this.showError('No puedes eliminar tu propio usuario mientras estás conectado.');
+      this.uiService.showError('No puedes eliminar tu propio usuario mientras estás conectado.');
       return;
     }
 
-    this.confirmationService.confirm({
-      message: `¿Eliminar al usuario "${user.getEmail}" de la base de datos?`,
-      header: 'Confirmar Eliminación',
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.userService.remove(user.getId).subscribe({
-          next: () => {
-            this.showSuccess('Usuario eliminado');
-            this.loadUsers();
-          },
-          error: () => this.showError('No se pudo eliminar al usuario')
-        });
-      }
+    this.uiService.confirmDelete(user.getEmail, () => {
+      this.userService.remove(user.getId).subscribe({
+        next: () => {
+          this.uiService.showSuccess('Usuario eliminado');
+          this.loadUsers();
+        },
+        error: () => this.uiService.showError('No se pudo eliminar al usuario')
+      });
     });
   }
 
   // Activa o desactiva la cuenta de un usuario (Alterna el estado actual)
   toggleActive(user: User) {
     if (this.isCurrentUser(user.getId)) {
-      this.showError('No puedes desactivar tu propia cuenta de administrador.');
+      this.uiService.showError('No puedes desactivar tu propia cuenta de administrador.');
       return;
     }
 
     // Calculamos el nuevo estado (el opuesto al actual)
     const nuevoEstado = !user.getIsActive;
+    const nombre = user.getFullName() || user.getEmail;
 
-    this.confirmationService.confirm({
-      message: `¿Estás seguro de que quieres ${nuevoEstado ? 'ACTIVAR' : 'DESACTIVAR'} a ${user.getProfile?.name || user.getEmail}?`,
-      header: 'Confirmar Acción',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sí, Confirmar',
-      rejectLabel: 'Cancelar',
-      acceptButtonStyleClass: nuevoEstado ? 'p-button-success' : 'p-button-danger',
-      
-      accept: () => {
+    this.uiService.confirmDialog({
+      header: nuevoEstado ? 'Confirmar Activación' : 'Confirmar Desactivación',
+      message: nuevoEstado 
+        ? `¿Estás seguro de que deseas activar la cuenta de "${nombre}"?`
+        : `¿Estás seguro de que deseas desactivar la cuenta de "${nombre}"? El usuario dejará de tener acceso a la aplicación.`,
+      icon: nuevoEstado ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-exclamation',
+      acceptLabel: nuevoEstado ? 'Sí, Activar' : 'Sí, Desactivar',
+      acceptButtonStyleClass: nuevoEstado ? 'p-button-success' : 'p-button-warning',
+      onAccept: () => {
         this.userService.update(user.getId, { isActive: nuevoEstado }).subscribe({
           next: () => {
-            this.showSuccess('Usuario actualizado correctamente');
-            user.setIsActive = nuevoEstado; // Actualización optimista del objeto local
+            this.uiService.showSuccess(`Usuario ${nuevoEstado ? 'activado' : 'desactivado'} correctamente`);
+            this.loadUsers(); // Recargamos para que el usuario "salte" de tabla reactivamente
           },
-          error: () => {
-            this.showError('Error al comunicar con el servidor');
-          }
+          error: () => this.uiService.showError('Error al comunicar con el servidor')
         });
       }
     });
   }
 
-  private showSuccess(detail: string) {
-    this.messageService.add({ severity: 'success', summary: 'Éxito', detail });
-  }
-
-  private showError(detail: string) {
-    this.messageService.add({ severity: 'error', summary: 'Error', detail });
-  }
 }

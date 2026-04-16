@@ -1,0 +1,12 @@
+<div class="spinner-overlay" [class.full-screen]="fullScreen">
+  <div class="spinner-container">
+    <div class="dynamic-spinner">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    @if (message) {
+      <p class="spinner-message">{{ message }}</p>
+    }
+  </div>
+</div>

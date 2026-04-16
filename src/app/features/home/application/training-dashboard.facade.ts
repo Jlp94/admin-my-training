@@ -6,7 +6,7 @@ import { Routine } from '../../training/domain/routine.model';
 import { PeriodType, ExerciseOption } from '../domain/dashboard.types';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../shared/models/api-response.model';
-import { forkJoin, map as rxMap } from 'rxjs';
+import { forkJoin, map as rxMap, catchError, of } from 'rxjs';
 import { UserDashboardFacade } from './user-dashboard.facade';
 
 @Injectable({ providedIn: 'root' })
@@ -145,7 +145,10 @@ export class TrainingDashboardFacade {
     const requests = exercises.map((ex) =>
       this.http
         .get<ApiResponse<any[]>>(`${environment.apiUrl}/users/${user.getId}/exercise-log/${ex.exerciseId}`)
-        .pipe(rxMap((res) => ({ id: ex.exerciseId, name: ex.name, data: res.data || [] }))),
+        .pipe(
+          rxMap((res) => ({ id: ex.exerciseId, name: ex.name, data: res.data || [] })),
+          catchError(() => of({ id: ex.exerciseId, name: ex.name, data: [] }))
+        )
     );
 
     forkJoin(requests).subscribe({

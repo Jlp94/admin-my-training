@@ -26,14 +26,17 @@ import { DietCalculatorService } from '../../data/diet-calculator.service';
 import { Food } from '../../domain/food.model';
 import { User } from '../../../users/domain/user.model';
 import { UiService } from '../../../../shared/services/ui.service';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-diet-edit',
+  standalone: true,
   imports: [
     ReactiveFormsModule,
     ButtonModule, InputTextModule, TextareaModule, InputNumberModule,
     SelectModule, CardModule, AccordionModule,
-    ToastModule, TooltipModule, RouterLink
+    ToastModule, TooltipModule, RouterLink,
+    SpinnerComponent
   ],
   providers: [MessageService],
   templateUrl: './diet-edit.html',
@@ -194,6 +197,13 @@ export class DietEdit implements OnInit {
 
   removeFoodFromMeal(mealIndex: number, foodIndex: number) {
     this.getFoods(mealIndex).removeAt(foodIndex);
+  }
+
+  removeLastFoodFromMeal(mealIndex: number) {
+    const foods = this.getFoods(mealIndex);
+    if (foods.length > 0) {
+      foods.removeAt(foods.length - 1);
+    }
   }
 
   // --- CÁLCULOS ---

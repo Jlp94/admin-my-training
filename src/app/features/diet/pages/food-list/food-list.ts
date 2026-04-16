@@ -2,36 +2,32 @@ import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-
-import { FoodService } from '../../data/food.service';
 import { Food, FoodGroup, NutritionalType } from '../../domain/food.model';
+import { FoodService } from '../../data/food.service';
+import { UiService } from '../../../../shared/services/ui.service';
 
 @Component({
   selector: 'app-food-list',
   imports: [
     ReactiveFormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, InputNumberModule,
-    SelectModule, ToastModule, ConfirmDialogModule, TagModule, TooltipModule
+    SelectModule, TagModule, TooltipModule
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [],
   templateUrl: './food-list.html'
 })
 export class FoodList {
   private readonly foodService = inject(FoodService);
   private readonly fb = inject(FormBuilder);
-  private readonly messageService = inject(MessageService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly uiService = inject(UiService);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly foodsResource = rxResource({
@@ -108,7 +104,7 @@ export class FoodList {
 
     op.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Operación completada con éxito' });
+        this.uiService.showSuccess('Operación completada con éxito');
         this.loadFoods();
         this.closeDialog();
       },
@@ -117,22 +113,16 @@ export class FoodList {
   }
 
   deleteFood(food: Food) {
-    this.confirmationService.confirm({
-      message: `¿Eliminar "${food.name}" de la base de datos?`,
-      header: 'Confirmar Eliminación',
-      icon: 'pi pi-exclamation-triangle',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.foodService.remove(food._id)
+    this.uiService.confirmDelete(food.name, () => {
+      this.foodService.remove(food._id)
           .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe({
             next: () => {
-              this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Alimento eliminado' });
+              this.uiService.showSuccess('Alimento eliminado');
               this.loadFoods();
             },
-            error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar' })
+            error: () => this.uiService.showError('No se pudo eliminar el alimento')
           });
-      }
     });
   }
 
@@ -142,7 +132,7 @@ export class FoodList {
   }
 
   private handleError() {
-    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'El alimento ya existe o hay un error de red' });
+    this.uiService.showError('El alimento ya existe o hay un error de red');
     this.saving.set(false);
   }
 }

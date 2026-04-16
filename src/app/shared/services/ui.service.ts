@@ -1,7 +1,57 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Injectable({ providedIn: 'root' })
 export class UiService {
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly messageService = inject(MessageService);
+
+  /**
+   * Diálogo de confirmación genérico altamente personalizable
+   */
+  confirmDialog(options: {
+    header: string;
+    message: string;
+    icon?: string;
+    acceptLabel?: string;
+    rejectLabel?: string;
+    acceptButtonStyleClass?: string;
+    onAccept: () => void;
+  }) {
+    this.confirmationService.confirm({
+      header: options.header,
+      message: options.message,
+      icon: options.icon || 'fa-solid fa-circle-question',
+      acceptLabel: options.acceptLabel || 'Confirmar',
+      rejectLabel: options.rejectLabel || 'Cancelar',
+      acceptButtonStyleClass: options.acceptButtonStyleClass || 'p-button-primary',
+      rejectButtonStyleClass: 'p-button-text p-button-secondary',
+      accept: options.onAccept
+    });
+  }
+
+  /**
+   * Diálogo específico para eliminaciones (peligro)
+   */
+  confirmDelete(itemName: string, onAccept: () => void) {
+    this.confirmDialog({
+      header: 'Confirmar Eliminación',
+      message: `¿Estás seguro de que deseas eliminar "${itemName}"? Esta acción no se puede deshacer.`,
+      icon: 'fa-solid fa-triangle-exclamation',
+      acceptLabel: 'Sí, Eliminar',
+      acceptButtonStyleClass: 'p-button-danger',
+      onAccept
+    });
+  }
+
+  showSuccess(detail: string, summary: string = 'Éxito') {
+    this.messageService.add({ severity: 'success', summary, detail, life: 3000 });
+  }
+
+  showError(detail: string, summary: string = 'Error') {
+    this.messageService.add({ severity: 'error', summary, detail, life: 5000 });
+  }
+
   /**
    * Desplaza la vista a un elemento y aplica un efecto de resaltado temporal
    * @param elementId ID del elemento en el DOM

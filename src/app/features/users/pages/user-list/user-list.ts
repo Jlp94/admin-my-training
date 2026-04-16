@@ -7,21 +7,21 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 import { UserFacade } from '../../application/user.facade';
 import { User } from '../../domain/user.model';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-user-list',
-
+  standalone: true,
   imports: [
-    ReactiveFormsModule, FormsModule, TableModule, ButtonModule,
+    CommonModule, ReactiveFormsModule, FormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, InputNumberModule,
-    SelectModule, ToggleSwitchModule, ToastModule, ConfirmDialogModule, TagModule, TooltipModule
+    SelectModule, ToggleSwitchModule, TagModule, TooltipModule, SpinnerComponent
   ],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',

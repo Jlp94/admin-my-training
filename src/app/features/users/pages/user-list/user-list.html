@@ -1,4 +1,7 @@
-<div class="p-6 h-full flex flex-col space-y-6 justify-center items-center">
+<div class="p-6 h-full flex flex-col space-y-6 justify-center items-center relative min-h-[400px]">
+  @if (facade.loading()) {
+    <app-spinner message="Cargando usuarios..."></app-spinner>
+  }
   <!-- Cabecera Principal -->
   <div class="flex w-7xl justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
     <div>
@@ -11,34 +14,33 @@
     <p-button label="Nuevo Usuario" icon="pi pi-plus" (onClick)="openNew()" severity="info"></p-button>
   </div>
 
-  <!-- SECCIÓN 1: CLIENTES -->
-  <div class="w-7xl flex-1 flex flex-col space-y-2 relative">
-    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 ml-2">
-      <i class="pi pi-heart-fill text-gray-400 mr-2"></i> Clientes
+  <!-- SECCIÓN 1: CLIENTES ACTIVOS -->
+  <div class="w-7xl flex flex-col space-y-2 relative">
+    <h2 class="text-sm font-bold text-emerald-600 dark:text-emerald-400 ml-2 uppercase tracking-wider flex items-center gap-2">
+      <i class="pi pi-check-circle"></i> Clientes Activos
     </h2>
-    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden flex-1 flex flex-col">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
       <p-table 
-        [value]="facade.clients()" 
+        [value]="facade.activeClients()" 
         [loading]="facade.loading()"
         [paginator]="true" 
-        [rows]="10" 
+        [rows]="5" 
         selectionMode="single"
         [showCurrentPageReport]="true"
         [alwaysShowPaginator]="false"
-        currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords} clientes"
-        class="flex-1 flex flex-col h-full min-h-0 w-full"
-        class="p-datatable-sm p-datatable-flex-bottom"
+        currentPageReportTemplate="Mostrando {first} al {last} de {totalRecords}"
+        class="p-datatable-sm"
         responsiveLayout="scroll">
         
         <ng-template pTemplate="header">
           <tr>
             <th class="w-70"><div class="text-left ml-2">Cliente</div></th>
             <th><div class="text-left">Email</div></th>
-            <th ><div class="text-center">Altura</div></th>
-            <th ><div class="text-center">Peso Base</div></th>
-            <th ><div class="text-center">Peso Actual</div></th>
-            <th ><div class="text-center">Activo</div></th>
-            <th ><div class="text-center">Acciones</div></th>
+            <th><div class="text-center">Altura</div></th>
+            <th><div class="text-center">Peso Base</div></th>
+            <th><div class="text-center">Peso Actual</div></th>
+            <th><div class="text-center">Estado</div></th>
+            <th><div class="text-center">Acciones</div></th>
           </tr>
         </ng-template>
         
@@ -55,71 +57,30 @@
                 }
                 <div class="flex flex-col">
                   <span class="font-medium text-gray-800 dark:text-gray-200">
-                    {{ user.getProfile?.name || 'Cliente' }} {{ user.getProfile?.lastName || 'Sin Nombre' }}
+                    {{ user.getProfile?.name || 'Cliente' }} {{ user.getProfile?.lastName || '' }}
                   </span>
                 </div>
               </div>
             </td>
+            <td><div class="text-left text-sm text-gray-500 truncate max-w-[200px]">{{ user.getEmail }}</div></td>
+            <td><div class="text-center text-gray-600 font-mono text-sm">{{ user.getProfile?.height || '-' }} cm</div></td>
+            <td><div class="text-center text-gray-600 font-mono text-sm">{{ user.getProfile?.weight || '-' }} kg</div></td>
             <td>
-              <div class="text-left py-1 text-sm text-gray-500 truncate max-w-[200px]">
-                {{ user.getEmail }}
+              <div class="text-center font-mono text-sm">
+                <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ user.getLastWeight() }}</span> kg
               </div>
             </td>
             <td>
-              <div class="text-center text-gray-600 font-mono">
-                @if (user.getProfile?.height) {
-                  {{ user.getProfile?.height }} <span class="text-xs text-gray-400">cm</span>
-                } @else {
-                  <span class="text-gray-400">—</span>
-                }
-              </div>
-            </td>
-            <td>
-              <div class="text-center text-gray-600 font-mono">
-                @if (user.getProfile?.weight) {
-                  {{ user.getProfile?.weight }} <span class="text-xs text-gray-400">kg</span>
-                } @else {
-                  <span class="text-gray-400">—</span>
-                }
-              </div>
-            </td>
-            <td>
-              <div class="text-center font-mono">
-                @if (user.getLastWeight() !== '—') {
-                  <span class="text-emerald-600 dark:text-emerald-400 font-bold">{{ user.getLastWeight() }}</span> <span class="text-xs text-gray-400">kg</span>
-                } @else {
-                  <span class="text-gray-400">—</span>
-                }
-              </div>
-            </td>
-            <td>
-              <div class="flex justify-center items-center gap-3">
-                <p-tag [value]="user.getIsActive ? 'Activo' : 'Inactivo'" 
-                       [severity]="user.getIsActive ? 'success' : 'warn'"
-                       class="min-w-[80px] text-center"></p-tag>
-                
-                <p-button [icon]="user.getIsActive ? 'pi pi-user-minus' : 'pi pi-user-plus'" 
-                          [rounded]="true" [text]="true" 
-                          [severity]="user.getIsActive ? 'danger' : 'success'"
-                          (onClick)="facade.toggleActive(user)"
-                          [pTooltip]="user.getIsActive ? 'Desactivar Cliente' : 'Activar Cliente'"
-                          tooltipPosition="left"></p-button>
+              <div class="flex justify-center">
+                <p-button icon="pi pi-user-minus" [rounded]="true" [text]="true" severity="danger" 
+                          (onClick)="facade.toggleActive(user)" pTooltip="Desactivar" tooltipPosition="left"></p-button>
               </div>
             </td>
             <td>
               <div class="flex justify-center gap-1">
-                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (onClick)="editUser(user)" pTooltip="Editar" tooltipPosition="left"></p-button>
-                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteUser(user)" pTooltip="Eliminar" tooltipPosition="left"></p-button>
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (onClick)="editUser(user)"></p-button>
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteUser(user)"></p-button>
               </div>
-            </td>
-          </tr>
-        </ng-template>
-        
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="7" class="text-center p-8 text-gray-500">
-              <i class="pi pi-user-minus text-4xl mb-4 text-gray-300 dark:text-gray-700 block"></i>
-              No se encontraron clientes asociados.
             </td>
           </tr>
         </ng-template>
@@ -127,79 +88,105 @@
     </div>
   </div>
 
-  <!-- SECCIÓN 2: ADMINISTRADORES -->
-  <div class="w-7xl flex-none flex flex-col space-y-2 mt-4">
-    <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-300 ml-2">
-      <i class="pi pi-shield text-gray-400 mr-2"></i> Administradores
+  <!-- SECCIÓN 2: CLIENTES INACTIVOS -->
+  <div class="w-7xl flex flex-col space-y-2 relative mt-4">
+    <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 ml-2 uppercase tracking-wider flex items-center gap-2">
+      <i class="pi pi-minus-circle"></i> Clientes Inactivos
     </h2>
-    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
       <p-table 
-        [value]="facade.admins()" 
+        [value]="facade.inactiveClients()" 
         [loading]="facade.loading()"
+        [paginator]="true" 
         [rows]="5" 
-        selectionMode="single"
-        class="w-full"
+        [alwaysShowPaginator]="false"
         class="p-datatable-sm"
         responsiveLayout="scroll">
         
         <ng-template pTemplate="header">
           <tr>
-            <th class="w-1/3"><div class="text-left ml-2">Nombre</div></th>
-            <th class="w-1/3"><div class="text-left">Email</div></th>
-            <th class="w-1/3"><div class="text-center">Activo</div></th>
+            <th class="w-70"><div class="text-left ml-2">Cliente</div></th>
+            <th><div class="text-left">Email</div></th>
+            <th><div class="text-center">Activar</div></th>
+            <th><div class="text-center">Acciones</div></th>
           </tr>
         </ng-template>
         
-        <ng-template pTemplate="body" let-admin>
-          <tr>
+        <ng-template pTemplate="body" let-user>
+          <tr class="opacity-70 grayscale-[0.5]">
             <td>
               <div class="flex items-center gap-3 ml-2">
-                <div class="h-8 w-8 min-w-8 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center font-bold text-xs tracking-wider border border-gray-200 dark:border-gray-700">
-                  {{ admin.getInitials() }}
+                <div class="h-9 w-9 min-w-9 bg-gray-200 dark:bg-gray-800 text-gray-500 rounded-full flex items-center justify-center font-bold text-xs">
+                  {{ user.getInitials() }}
                 </div>
-                <span class="font-medium text-gray-800 dark:text-gray-200">
-                  {{ admin.getProfile?.name || 'Administrador' }} {{ admin.getProfile?.lastName || '' }}
-                </span>
+                <span class="text-sm text-gray-600 dark:text-gray-400 line-through decoration-1">{{ user.getFullName() }}</span>
+              </div>
+            </td>
+            <td><div class="text-left text-sm text-gray-400">{{ user.getEmail }}</div></td>
+            <td>
+              <div class="flex justify-center">
+                <p-button icon="pi pi-user-plus" [rounded]="true" [text]="true" severity="success" 
+                          (onClick)="facade.toggleActive(user)" pTooltip="Activar de nuevo" tooltipPosition="left"></p-button>
               </div>
             </td>
             <td>
-              <div class="text-left py-1 text-sm text-gray-500">
-                {{ admin.getEmail }}
+              <div class="flex justify-center gap-1">
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteUser(user)"></p-button>
               </div>
-            </td>
-            <td>
-              <div class="flex justify-center items-center gap-3">
-                <p-tag [value]="admin.getIsActive ? 'Activo' : 'Inactivo'" 
-                       [severity]="admin.getIsActive ? 'success' : 'warn'"
-                       class="min-w-[80px] text-center"></p-tag>
-                
-                @if (!facade.isCurrentUser(admin.getId)) {
-                  <p-button [icon]="admin.getIsActive ? 'pi pi-user-minus' : 'pi pi-user-plus'" 
-                            [rounded]="true" [text]="true" 
-                            [severity]="admin.getIsActive ? 'danger' : 'success'"
-                            (onClick)="facade.toggleActive(admin)"
-                            [pTooltip]="admin.getIsActive ? 'Desactivar Admin' : 'Activar Admin'"
-                            tooltipPosition="left"></p-button>
-                } @else {
-                   <div class="w-10"></div> <!-- Espaciador para el admin actual -->
-                }
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-        
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="3" class="text-center p-6 text-gray-500">
-              <i class="pi pi-lock text-3xl mb-3 text-gray-300 dark:text-gray-700 block"></i>
-              No hay administradores registrados.
             </td>
           </tr>
         </ng-template>
       </p-table>
     </div>
   </div>
-</div>
+
+  <!-- SECCIÓN 3: ADMINISTRADORES -->
+  <div class="w-7xl flex flex-col space-y-2 mt-6">
+    <h2 class="text-sm font-bold text-indigo-600 dark:text-indigo-400 ml-2 uppercase tracking-wider flex items-center gap-2">
+      <i class="pi pi-shield"></i> Administradores
+    </h2>
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <p-table 
+        [value]="facade.admins()" 
+        [loading]="facade.loading()"
+        class="p-datatable-sm"
+        responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="w-1/3"><div class="text-left ml-2">Nombre</div></th>
+            <th class="w-1/3"><div class="text-left">Email</div></th>
+            <th class="w-1/3"><div class="text-center">Estado</div></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-admin>
+          <tr>
+            <td>
+              <div class="flex items-center gap-3 ml-2">
+                <div class="h-8 w-8 min-w-8 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center font-bold text-xs border border-gray-200">
+                  {{ admin.getInitials() }}
+                </div>
+                <span class="font-medium text-gray-800 dark:text-gray-200 text-sm">{{ admin.getFullName() }}</span>
+              </div>
+            </td>
+            <td><div class="text-left text-sm text-gray-500">{{ admin.getEmail }}</div></td>
+            <td>
+              <div class="flex justify-center">
+                @if (facade.isCurrentUser(admin.getId)) {
+                  <p-tag value="Eres tú" severity="info" class="text-[10px]"></p-tag>
+                } @else {
+                  <p-button [icon]="admin.getIsActive ? 'pi pi-user-minus' : 'pi pi-user-plus'" 
+                            [rounded]="true" [text]="true" 
+                            [severity]="admin.getIsActive ? 'danger' : 'success'"
+                            (onClick)="facade.toggleActive(admin)"></p-button>
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+  </div>
 
 <p-dialog 
   [(visible)]="showDialog" 
@@ -286,6 +273,3 @@
     <p-button label="Guardar" icon="pi pi-check" severity="info" [loading]="saving()" (onClick)="saveUser()"></p-button>
   </ng-template>
 </p-dialog>
-
-<p-toast position="bottom-right"></p-toast>
-<p-confirmDialog></p-confirmDialog>

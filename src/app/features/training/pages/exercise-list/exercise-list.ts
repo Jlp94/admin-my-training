@@ -2,7 +2,6 @@ import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -10,28 +9,28 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { ExerciseService } from '../../data/exercise.service';
 import { Exercise, EquipmentType, MuscleGroup, MovementType } from '../../domain/exercise.model';
+import { UiService } from '../../../../shared/services/ui.service';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-exercise-list',
   imports: [
     ReactiveFormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, TextareaModule, MultiSelectModule,
-    SelectModule, ToastModule, ConfirmDialogModule, TagModule
+    SelectModule, TagModule, TooltipModule, SpinnerComponent
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [],
   templateUrl: './exercise-list.html'
 })
 export class ExerciseList {
   private readonly exerciseService = inject(ExerciseService); 
   private readonly fb = inject(FormBuilder);
-  private readonly messageService = inject(MessageService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly uiService = inject(UiService);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly exercisesResource = rxResource({
@@ -102,7 +101,7 @@ export class ExerciseList {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Ejercicio actualizado correctamente' });
+          this.uiService.showSuccess('Ejercicio actualizado correctamente');
           this.loadExercises();
           this.closeDialog();
         },
@@ -113,7 +112,7 @@ export class ExerciseList {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Ejercicio creado correctamente' });
+          this.uiService.showSuccess('Ejercicio creado correctamente');
           this.loadExercises();
           this.closeDialog();
         },
@@ -123,25 +122,16 @@ export class ExerciseList {
   }
 
   deleteExercise(exercise: Exercise) {
-    this.confirmationService.confirm({
-      message: `¿Estás seguro de que quieres eliminar el ejercicio "${exercise.name}"?`,
-      header: 'Confirmar Eliminación',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sí, Eliminar',
-      rejectLabel: 'Cancelar',
-      rejectButtonStyleClass: 'p-button-text',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
+    this.uiService.confirmDelete(exercise.name, () => {
         this.exerciseService.remove(exercise._id)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Ejercicio eliminado' });
+            this.uiService.showSuccess('Ejercicio eliminado');
             this.loadExercises();
           },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar' })
+          error: () => this.uiService.showError('No se pudo eliminar el ejercicio')
         });
-      }
     });
   }
 
@@ -152,7 +142,7 @@ export class ExerciseList {
   }
 
   private handleError() {
-    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Ha ocurrido un problema en el servidor' });
+    this.uiService.showError('Ha ocurrido un problema en el servidor');
     this.saving.set(false);
   }
 

@@ -1,4 +1,7 @@
-<div class="p-6 h-full flex flex-col space-y-4 justify-center items-center">
+<div class="p-6 h-full flex flex-col space-y-4 justify-center items-center relative min-h-[400px]">
+  @if (loading()) {
+    <app-spinner message="Cargando actividades de cardio..."></app-spinner>
+  }
   <div class="flex w-7xl justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
@@ -121,6 +124,3 @@
     <p-button label="Guardar" icon="fa-solid fa-check" severity="info" [loading]="saving()" (onClick)="saveCardio()"></p-button>
   </ng-template>
 </p-dialog>
-
-<p-toast position="bottom-right"></p-toast>
-<p-confirmDialog></p-confirmDialog>

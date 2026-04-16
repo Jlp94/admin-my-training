@@ -5,14 +5,13 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { MessageService, ConfirmationService } from 'primeng/api';
-
 import { RoutineService } from '../../data/routine.service';
 import { Routine } from '../../domain/routine.model';
 import { User } from '../../../users/domain/user.model';
 import { UserInterface } from '../../../users/domain/user.interface';
+import { UiService } from '../../../../shared/services/ui.service';
+import { CommonModule } from '@angular/common';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-routine-list',
@@ -21,18 +20,17 @@ import { UserInterface } from '../../../users/domain/user.interface';
     ButtonModule, 
     TagModule, 
     TooltipModule, 
-    ToastModule, 
-    ConfirmDialogModule,
-    RouterLink
+    RouterLink,
+    CommonModule,
+    SpinnerComponent
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [],
   templateUrl: './routine-list.html',
   styleUrl: './routine-list.scss',
 })
 export class RoutineList {
   private readonly routineService = inject(RoutineService);
-  private readonly messageService = inject(MessageService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly uiService = inject(UiService);
 
   private readonly routinesResource = rxResource({
     stream: () => this.routineService.findAll()
@@ -68,32 +66,16 @@ export class RoutineList {
   }
 
   deleteRoutine(routine: Routine) {
-    this.confirmationService.confirm({
-      message: `¿Estás seguro de que quieres eliminar la rutina "${routine.name}"?`,
-      header: 'Confirmar Eliminación',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sí, Eliminar',
-      rejectLabel: 'Cancelar',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
+    this.uiService.confirmDelete(routine.name, () => {
         this.routineService.remove(routine._id).subscribe({
           next: () => {
-            this.messageService.add({ 
-              severity: 'success', 
-              summary: 'Éxito', 
-              detail: 'Rutina eliminada correctamente' 
-            });
+            this.uiService.showSuccess('Rutina eliminada correctamente');
             this.loadRoutines();
           },
           error: () => {
-            this.messageService.add({ 
-              severity: 'error', 
-              summary: 'Error', 
-              detail: 'No se pudo eliminar la rutina' 
-            });
+            this.uiService.showError('No se pudo eliminar la rutina');
           }
         });
-      }
     });
   }
 

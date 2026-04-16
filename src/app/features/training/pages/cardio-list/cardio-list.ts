@@ -1,34 +1,31 @@
 import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-
 import { CardioService } from '../../data/cardio.service';
 import { Cardio, CardioType } from '../../domain/cardio.model';
+import { UiService } from '../../../../shared/services/ui.service';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-cardio-list',
   imports: [
     ReactiveFormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, InputNumberModule,
-    SelectModule, ToastModule, ConfirmDialogModule
+    SelectModule, SpinnerComponent
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [],
   templateUrl: './cardio-list.html'
 })
 export class CardioList {
   private readonly cardioService = inject(CardioService);
   private readonly fb = inject(FormBuilder);
-  private readonly messageService = inject(MessageService);
-  private readonly confirmationService = inject(ConfirmationService);
+  private readonly uiService = inject(UiService);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly cardiosResource = rxResource({
@@ -118,7 +115,7 @@ export class CardioList {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Actualizado correctamente' });
+          this.uiService.showSuccess('Actualizado correctamente');
           this.loadCardios();
           this.closeDialog();
         },
@@ -129,7 +126,7 @@ export class CardioList {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Creado correctamente' });
+          this.uiService.showSuccess('Creado correctamente');
           this.loadCardios();
           this.closeDialog();
         },
@@ -139,25 +136,16 @@ export class CardioList {
   }
 
   deleteCardio(cardio: Cardio) {
-    this.confirmationService.confirm({
-      message: `¿Estás seguro de que quieres eliminar la actividad "${cardio.label}"?`,
-      header: 'Confirmar Eliminación',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sí, Eliminar',
-      rejectLabel: 'Cancelar',
-      rejectButtonStyleClass: 'p-button-text',
-      acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
+    this.uiService.confirmDelete(cardio.label, () => {
         this.cardioService.remove(cardio._id)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Actividad eliminada' });
+            this.uiService.showSuccess('Actividad eliminada');
             this.loadCardios();
           },
-          error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar' })
+          error: () => this.uiService.showError('No se pudo eliminar la actividad')
         });
-      }
     });
   }
 
@@ -167,7 +155,7 @@ export class CardioList {
   }
 
   private handleError() {
-    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Problema en el servidor' });
+    this.uiService.showError('Problema en el servidor');
     this.saving.set(false);
   }
 }
