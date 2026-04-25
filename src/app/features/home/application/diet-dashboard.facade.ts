@@ -1,10 +1,8 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { of } from 'rxjs';
 import { DietService } from '../../diet/data/diet.service';
 import { FoodService } from '../../diet/data/food.service';
 import { Diet } from '../../diet/domain/diet.model';
-import { Food } from '../../diet/domain/food.model';
 import { UserDashboardFacade } from './user-dashboard.facade';
 
 @Injectable({ providedIn: 'root' })
@@ -13,18 +11,14 @@ export class DietDashboardFacade {
   private readonly foodService = inject(FoodService);
   private readonly userFacade = inject(UserDashboardFacade);
 
-  // ── ESTADO ──
-  
   private readonly allFoodsResource = rxResource({
     stream: () => this.foodService.findAll()
   });
 
   readonly allFoods = computed(() => this.allFoodsResource.value() ?? []);
 
-  // Señal interna para almacenar la dieta seleccionada
   readonly selectedDiet = signal<Diet | null>(null);
 
-  // ── CÓMPUTOS ──
   readonly selectedDietId = computed(() => this.selectedDiet()?._id ?? '');
   
   readonly getExtraKcal = computed(() => 
@@ -51,7 +45,6 @@ export class DietDashboardFacade {
     };
   });
 
-  // ── ACCIONES ──
   loadAllFoods() {
     this.allFoodsResource.reload();
   }

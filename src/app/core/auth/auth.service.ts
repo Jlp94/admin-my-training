@@ -73,9 +73,8 @@ export class AuthService {
     const token = localStorage.getItem('admin_token');
     if (!token || token === 'undefined') return null;
     try {
-      // Decodificación manual del payload del JWT (segunda parte del string)
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload._id || payload.sub || null; 
+      return payload._id || payload.sub || null;
     } catch (e) {
       return null;
     }

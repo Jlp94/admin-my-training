@@ -5,34 +5,28 @@ import { PeriodType, ChartDataset, ExerciseOption } from '../domain/dashboard.ty
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
 
-  /** 
-   * Calcula la fecha de corte según el periodo.
-   * Para 'week', se toma el Lunes de la semana actual a las 00:00.
-   */
   private getCutoffDate(period: PeriodType): Date {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
     switch (period) {
       case 'week': {
-        const day = now.getDay(); // 0 (Dom) - 6 (Sab)
-        const diff = (day === 0 ? 6 : day - 1); // Días para llegar al lunes
+        const day = now.getDay();
+        const diff = (day === 0 ? 6 : day - 1);
         const monday = new Date(now);
         monday.setDate(now.getDate() - diff);
         return monday;
       }
       case 'month':   return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       case 'quarter': return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      default:        return new Date(0); // Para 'all' u otros periodos, devolver el inicio de los tiempos
+      default:        return new Date(0);
     }
   }
 
-  /** Obtiene el rango de fechas [Lunes, Domingo] aplicando un offset de semanas */
   getWeekRange(offset: number = 0): { start: Date; end: Date } {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     
-    // Ir al lunes de la semana actual
     const day = now.getDay();
     const diffToMonday = (day === 0 ? 6 : day - 1);
     
@@ -46,7 +40,6 @@ export class DashboardService {
     return { start, end };
   }
 
-  /** Cuenta entrenamientos en un rango específico de fechas */
   countWorkoutsInRange(workoutLogs: WorkoutLogInterface[], start: Date, end: Date): number {
     return (workoutLogs || []).filter(log => {
       const date = new Date(log.doneAt);
@@ -54,7 +47,6 @@ export class DashboardService {
     }).length;
   }
 
-  /** Filtra los logs de entrenamiento por periodo y devuelve la cantidad */
   countWorkoutsByPeriod(workoutLogs: WorkoutLogInterface[], period: PeriodType): number {
     const cutoff = this.getCutoffDate(period);
     const end = new Date();
@@ -62,7 +54,6 @@ export class DashboardService {
     return this.countWorkoutsInRange(workoutLogs, cutoff, end);
   }
 
-  /** Filtra neatLogs por periodo y genera datos para la gráfica de peso */
   buildWeightChart(neatLogs: UserNeatInterface[], period: PeriodType): ChartDataset {
     const cutoff = this.getCutoffDate(period);
     const filtered = (neatLogs || [])
@@ -86,7 +77,6 @@ export class DashboardService {
     };
   }
 
-  /** Filtra neatLogs por periodo y genera datos para la gráfica de pasos */
   buildStepsChart(neatLogs: UserNeatInterface[], period: PeriodType): ChartDataset {
     const cutoff = this.getCutoffDate(period);
     const filtered = (neatLogs || [])
@@ -110,7 +100,6 @@ export class DashboardService {
     };
   }
 
-  /** Genera datos para la gráfica de progresión de un ejercicio (kg + reps) */
   buildExerciseChart(progressionData: { date: string; stats: { kg: number; reps: number; rir: number } }[], period: PeriodType): ChartDataset {
     const cutoff = this.getCutoffDate(period);
     const filtered = (progressionData || [])
@@ -146,7 +135,6 @@ export class DashboardService {
     };
   }
 
-  /** Extrae la lista única de ejercicios de los workoutLogs del usuario */
   extractExercises(workoutLogs: WorkoutLogInterface[]): ExerciseOption[] {
     const map = new Map<string, { name: string; count: number }>();
 
@@ -166,7 +154,6 @@ export class DashboardService {
       .sort((a, b) => b.count - a.count);
   }
 
-  /** Formatea una fecha ISO a "dd/mm" */
   formatDate(date: string | Date): string {
     const d = new Date(date);
     return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;

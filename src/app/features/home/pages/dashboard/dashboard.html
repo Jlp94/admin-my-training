@@ -1,6 +1,5 @@
 <div class="p-6 h-full flex flex-col gap-5 max-w-[1600px] mx-auto overflow-y-auto">
 
-  <!-- ═══════════════ SELECTOR DE USUARIOS ═══════════════ -->
   <section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-5">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest flex items-center gap-2">
@@ -40,7 +39,6 @@
 
   @if (facade.selectedUser(); as user) {
 
-    <!-- ═══════════════ CABECERA + PERIODO ═══════════════ -->
     <div class="flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
         <div class="h-10 w-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow">
@@ -52,7 +50,6 @@
         </div>
       </div>
 
-      <!-- Periodo selector -->
       <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 gap-0.5">
         @for (opt of facade.periodOptions; track opt.value) {
           <button
@@ -69,7 +66,6 @@
       </div>
     </div>
 
-    <!-- ═══════════════ STATS CARDS (DYNAMIC) ═══════════════ -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
       @for (card of facade.statsCards(); track card.label) {
         <div class="stat-card">
@@ -78,14 +74,12 @@
           </div>
 
           @if (card.type === 'macros') {
-            <!-- Layout Macros -->
             <div class="flex items-baseline gap-5 flex-wrap">
               <span class="text-[18px] font-bold text-blue-500">P {{ card.value.p }}</span>
               <span class="text-[18px] font-bold text-amber-500">C {{ card.value.c }}</span>
               <span class="text-[18px] font-bold text-red-400">G {{ card.value.f }}</span>
             </div>
           } @else {
-            <!-- Layout Standard -->
             <div>
               <span class="stat-card__value" [class]="card.valueColorClass">{{ card.value }}</span>
               @if (card.unit) {
@@ -101,9 +95,7 @@
       }
     </div>
 
-    <!-- ═══════════════ GRÁFICAS PESO + PASOS ═══════════════ -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <!-- Peso -->
       <div class="chart-card">
         <h3 class="chart-card__title">
           <i class="fa-solid fa-weight-scale text-emerald-500"></i>
@@ -121,7 +113,6 @@
         }
       </div>
 
-      <!-- Pasos -->
       <div class="chart-card">
         <h3 class="chart-card__title">
           <i class="fa-solid fa-shoe-prints text-indigo-500"></i>
@@ -140,7 +131,6 @@
       </div>
     </div>
 
-    <!-- ═══════════════ TABS: ENTRENAMIENTO / DIETA / CARDIO ═══════════════ -->
     <section class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
       
       <p-tabs [value]="facade.activeTab()" (valueChange)="facade.setTab($event)">
@@ -157,17 +147,13 @@
         </p-tablist>
 
         <p-tabpanels class="pt-2">
-          <!-- ── TAB: ENTRENAMIENTO ── -->
           <p-tabpanel value="training">
             <app-training-analytics />
           </p-tabpanel>
-
-          <!-- ── TAB: DIETA ── -->
           <p-tabpanel value="diet">
             <app-diet-analytics />
           </p-tabpanel>
 
-          <!-- ── TAB: CARDIO ── -->
           <p-tabpanel value="cardio">
             <app-cardio-analytics />
           </p-tabpanel>

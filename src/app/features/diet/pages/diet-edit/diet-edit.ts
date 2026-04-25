@@ -3,7 +3,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-// PrimeNG
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -17,7 +16,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TextareaModule } from 'primeng/textarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 
-// Services & Models
 import { DietService } from '../../data/diet.service';
 import { FoodService } from '../../data/food.service';
 import { UserService } from '../../../users/data/user.service';
@@ -54,25 +52,20 @@ export class DietEdit implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly destroyRef = inject(DestroyRef);
 
-  // States
   readonly dietId = signal<string | null>(null);
   readonly loading = signal(false);
   readonly saving = signal(false);
   
-  // Data Lists
   readonly foods = signal<Food[]>([]);
   readonly users = signal<User[]>([]);
   
-  // Form
   readonly dietForm: FormGroup = this.dietFormService.initForm();
 
-  // Computeds
   readonly isEditing = computed(() => !!this.dietId());
   
   private readonly formTotals = signal({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   readonly totals = this.formTotals.asReadonly();
 
-  // Getters
   get meals() { return this.dietFormService.getControlArray(this.dietForm, 'meals'); }
 
   getFoodName(id: string): string {
@@ -81,26 +74,29 @@ export class DietEdit implements OnInit {
 
   ngOnInit() {
     this.loadInitialData();
-    
-    // Observar ID de ruta
+    this.handleRouteParams();
+    this.listenToFormChanges();
+  }
+
+  private handleRouteParams() {
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
-      if (params['id']) {
-        this.dietId.set(params['id']);
-        this.loadDiet(params['id']);
-      } else {
-        // Nueva dieta: empezar con una comida por defecto
-        if (this.meals.length === 0) this.addMeal();
-      }
-    });
+        if (params['id']) {
+          this.dietId.set(params['id']);
+          this.loadDiet(params['id']);
+        } else {
+          if (this.meals.length === 0) this.addMeal();
+        }
+      });
+  }
 
-    // Suscribirse a cambios para recalcular macros/kcal
+  private listenToFormChanges() {
     this.dietForm.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-      this.calculateTotals();
-    });
+        this.calculateTotals();
+      });
   }
 
   private loadInitialData() {
@@ -111,7 +107,6 @@ export class DietEdit implements OnInit {
     this.userService.findAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(users => {
-      // Cliente (rol 'user')
       this.users.set(users.filter(u => u.getRole === 'user'));
     });
   }
@@ -177,7 +172,6 @@ export class DietEdit implements OnInit {
     const meal = this.meals.at(mealIndex) as FormGroup;
     const foodsArray = this.dietFormService.getControlArray(meal, 'foods');
 
-    // Si cargamos una dieta existente, intentamos inferir el nutritionalType del alimento
     let nutritionalType = data?.nutritionalType || '';
     if (data?.foodId && !nutritionalType) {
       const food = this.foods().find(f => f._id === data.foodId);

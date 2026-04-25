@@ -66,7 +66,6 @@ export class RoutineEdit implements OnInit {
     return this.routineFormService.getCategoryOptions(type);
   }
 
-  // Usuarios
   readonly users = signal<User[]>([]);
   readonly clientOptions = computed(() =>
     this.users()
@@ -74,7 +73,6 @@ export class RoutineEdit implements OnInit {
       .map((u) => ({ label: u.getFullName(), value: u.getId })),
   );
 
-  // Cache de ejercicios por grupo muscular
   readonly exercisesByGroup = signal<Record<string, Exercise[]>>({});
 
   routineForm: FormGroup;
@@ -95,7 +93,6 @@ export class RoutineEdit implements OnInit {
       this.routineId.set(id);
       this.loadRoutine(id);
     } else {
-      // Si es nueva, empezamos con una sesión
       this.addSession();
     }
   }
@@ -131,8 +128,6 @@ export class RoutineEdit implements OnInit {
     });
   }
 
-  // --- MÉTODOS DE FORMULARIO DINÁMICO ---
-
   addSession(data?: any): FormGroup {
     const session = this.routineFormService.createSessionGroup(data);
 
@@ -162,7 +157,6 @@ export class RoutineEdit implements OnInit {
     const exercises = session.get('exercises') as FormArray;
     const exerciseGroup = this.routineFormService.createExerciseGroup(data);
 
-    // Si tiene datos de sets, cargarlos. Si no, añadir un set por defecto.
     if (data?.sets && data.sets.length > 0) {
       data.sets.forEach((s: any) => this.addSetToExercise(exerciseGroup, s));
     } else {
@@ -171,14 +165,12 @@ export class RoutineEdit implements OnInit {
 
     exercises.push(exerciseGroup);
 
-    // Escuchar cambios en muscleGroup para cargar ejercicios
     exerciseGroup.get('muscleGroup')?.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((group) => {
       if (group) this.loadExercisesByGroup(group);
     });
 
-    // Scroll al nuevo ejercicio si es una creación manual y no se ha pedido omitirlo
     if (!data && !skipScroll) {
       const sessionIndex = this.sessions.controls.indexOf(session);
       const exerciseIndex = exercises.length - 1;
@@ -207,8 +199,6 @@ export class RoutineEdit implements OnInit {
     const sets = this.getSets(exercise);
     this.routineFormService.removeLastItem(sets);
   }
-
-  // --- LÓGICA DE NEGOCIO ---
 
   loadExercisesByGroup(group: string) {
     if (this.exercisesByGroup()[group]) return;

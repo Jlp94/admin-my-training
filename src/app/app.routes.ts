@@ -15,7 +15,6 @@ export const routes: Routes = [
         path: 'users',
         children: [
           { path: '', loadComponent: () => import('./features/users/pages/user-list/user-list').then(m => m.UserList) },
-          { path: ':id', loadComponent: () => import('./features/users/pages/user-detail/user-detail').then(m => m.UserDetail) }
         ]
       },
       {

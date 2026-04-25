@@ -27,7 +27,7 @@ export interface StatCard {
   subValue?: string;
   unit?: string;
   icon: string;
-  colorClass: string;      // Clases para el icono (ej: bg-emerald-50 text-emerald-500)
-  valueColorClass?: string; // Clases para el texto del valor (ej: text-emerald-600)
+  colorClass: string;
+  valueColorClass?: string;
   type: 'standard' | 'macros';
 }

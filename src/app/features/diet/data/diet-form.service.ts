@@ -8,12 +8,9 @@ import { getControlArray, removeLastItem } from '../../../shared/utils/form.util
 export class DietFormService {
   private readonly fb = inject(FormBuilder);
 
-  // Categorías nutricionales para los selectores
   readonly nutritionalTypes = Object.values(NutritionalType);
 
-  /**
-   * Inicializa el formulario principal de una dieta
-   */
+
   initForm(): FormGroup {
     return this.fb.group({
       userId: ['', Validators.required],
@@ -31,9 +28,7 @@ export class DietFormService {
     });
   }
 
-  /**
-   * Crea un grupo de comida (Meal)
-   */
+  
   createMealGroup(data?: any): FormGroup {
     return this.fb.group({
       name: [data?.name || '', Validators.required],
@@ -41,9 +36,7 @@ export class DietFormService {
     });
   }
 
-  /**
-   * Crea un grupo de alimento dentro de una comida (MealFood)
-   */
+
   createFoodGroup(data?: any): FormGroup {
     return this.fb.group({
       nutritionalType: [data?.nutritionalType || ''], // Campo para filtrar
@@ -52,12 +45,10 @@ export class DietFormService {
     });
   }
 
-  /** Delegación a shared/utils/form.utils */
+
   getControlArray(parent: AbstractControl, path: string): FormArray {
     return getControlArray(parent, path);
   }
-
-  /** Delegación a shared/utils/form.utils */
   removeLastItem(array: FormArray, minLength: number = 0): void {
     removeLastItem(array, minLength);
   }

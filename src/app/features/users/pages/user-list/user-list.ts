@@ -43,7 +43,7 @@ export class UserList implements OnInit {
 
   protected userForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.minLength(6)]], // Se validará dinámicamente
+    password: ['', [Validators.minLength(6)]], 
     role: ['user', Validators.required],
     isActive: [true],
     name: ['', Validators.required],
@@ -68,7 +68,6 @@ export class UserList implements OnInit {
 
   editUser(user: User) {
     this.currentUser = user;
-    this.isEditing.set(false); // Esta linea estaba mal en el archivo? Ah no, era true.
     this.isEditing.set(true);
     this.userForm.get('password')?.clearValidators();
     this.userForm.get('password')?.updateValueAndValidity();

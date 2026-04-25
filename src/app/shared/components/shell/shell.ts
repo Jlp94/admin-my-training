@@ -7,7 +7,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 
 interface NavItem {
   label: string;
-  icon: string;      // PrimeIcon or FontAwesome class
+  icon: string;
   route: string;
   exact?: boolean;
 }
@@ -27,7 +27,6 @@ export class Shell implements OnInit {
   readonly currentUser = this.auth.currentUser;
 
   ngOnInit() {
-    // Si al cargar el Shell no estamos autenticados (token inválido/expirado), fuera
     if (!this.auth.isAuthenticated()) {
       this.auth.logout();
     }

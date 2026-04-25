@@ -5,6 +5,7 @@ import { TrainingDashboardFacade } from './training-dashboard.facade';
 import { User } from '../../users/domain/user.model';
 import { PeriodType, StatCard } from '../domain/dashboard.types';
 import { DashboardService } from '../infrastructure/dashboard.service';
+import { buildStatCards, DASHBOARD_PERIOD_OPTIONS } from '../domain/dashboard.data';
 
 @Injectable({ providedIn: 'root' })
 export class DashboardFacade {
@@ -13,7 +14,6 @@ export class DashboardFacade {
   private readonly trainingFacade = inject(TrainingDashboardFacade);
   public readonly dashboardService = inject(DashboardService);
 
-  // ── ESTADO COMPARTIDO / AGREGADO ──
   readonly users = this.userFacade.users;
   readonly selectedUser = this.userFacade.selectedUser;
   readonly loading = this.userFacade.loading;
@@ -44,17 +44,8 @@ export class DashboardFacade {
   readonly exerciseChartData = this.trainingFacade.exerciseChartData;
 
   readonly activeTab = signal<string>('training');
+  readonly periodOptions = DASHBOARD_PERIOD_OPTIONS;
 
-  // ── CONFIGURACIÓN ──
-  readonly periodOptions = [
-    { label: 'Semanal', value: 'week' as PeriodType },
-    { label: 'Mensual', value: 'month' as PeriodType },
-    { label: 'Trimestral', value: 'quarter' as PeriodType },
-    { label: 'Historial', value: 'all' as PeriodType },
-  ];
-
-  // ── CÓMPUTOS DINÁMICOS (Cross-Facade) ──
-  
   readonly lastWeight = this.userFacade.lastWeight;
   readonly lastSteps = this.userFacade.lastSteps;
 
@@ -71,60 +62,14 @@ export class DashboardFacade {
     if (!user) return [];
 
     const sessionsPerWeek = routine?.sessions?.length ?? 0;
-    const workoutValue = sessionsPerWeek > 0 ? sessionsPerWeek : '—';
-    const workoutUnit = sessionsPerWeek > 0 ? 'días' : undefined;
-
-    return [
-      {
-        label: 'Último Peso',
-        value: this.lastWeight() ?? '—',
-        unit: 'kg',
-        icon: 'fa-solid fa-weight-scale',
-        colorClass: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500',
-        valueColorClass: 'text-emerald-600 dark:text-emerald-400',
-        type: 'standard',
-      },
-      {
-        label: 'Últimos Pasos',
-        value: this.lastSteps() ?? '—',
-        icon: 'fa-solid fa-shoe-prints',
-        colorClass: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500',
-        valueColorClass: 'text-indigo-600 dark:text-indigo-400',
-        type: 'standard',
-      },
-      {
-        label: 'Objetivo Kcal',
-        value: user.getTargetKcal || '—',
-        unit: 'kcal',
-        icon: 'fa-solid fa-fire-flame-curved',
-        colorClass: 'bg-amber-50 dark:bg-amber-900/20 text-amber-500',
-        valueColorClass: 'text-amber-600 dark:text-amber-400',
-        type: 'standard',
-      },
-      {
-        label: 'Macros (g)',
-        value: {
-          p: user.getProtein || '—',
-          c: user.getCarbs || '—',
-          f: user.getFat || '—',
-        },
-        icon: 'fa-solid fa-chart-pie',
-        colorClass: 'bg-blue-50 dark:bg-blue-900/20 text-blue-500',
-        type: 'macros',
-      },
-      {
-        label: 'Entrenamientos',
-        value: workoutValue,
-        unit: workoutUnit,
-        icon: 'fa-solid fa-dumbbell',
-        colorClass: 'bg-purple-50 dark:bg-purple-900/20 text-purple-500',
-        valueColorClass: 'text-purple-600 dark:text-purple-400',
-        type: 'standard',
-      },
-    ];
+    
+    return buildStatCards(
+      user, 
+      this.lastWeight(), 
+      this.lastSteps(), 
+      sessionsPerWeek
+    );
   });
-
-  // ── ACCIONES ──
 
   init() {
     this.dietFacade.loadAllFoods();
@@ -138,7 +83,6 @@ export class DashboardFacade {
   selectUser(user: User) {
     this.userFacade.select(user);
     
-    // Al cambiar de usuario, reseteamos y cargamos sus planes específicos
     this.trainingFacade.clear();
     this.dietFacade.clear();
 

@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, KeyValuePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TabsModule } from 'primeng/tabs';
 import { SelectModule } from 'primeng/select';
@@ -19,17 +19,15 @@ import { DashboardFacade } from '../../application/dashboard.facade';
   standalone: true,
   imports: [
     CommonModule, FormsModule, SelectModule, ChartModule, ButtonModule, TooltipModule,
-    TagModule, SkeletonModule, TabsModule, KeyValuePipe,
+    TagModule, SkeletonModule, TabsModule,
     TrainingAnalyticsComponent, DietAnalyticsComponent, CardioAnalyticsComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard implements OnInit {
-  // Patrón Facade: Inyectamos todo el estado y lógica centralizados
   readonly facade = inject(DashboardFacade);
 
-  // Configuraciones visuales de las gráficas (se quedan en el componente UI)
   readonly lineChartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,

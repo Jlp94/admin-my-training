@@ -9,13 +9,11 @@ export class UserDashboardFacade {
   private readonly userService = inject(UserService);
   private readonly dashboardService = inject(DashboardService);
 
-  // ── ESTADO (Signals) ──
   readonly users = signal<User[]>([]);
   readonly selectedUser = signal<User | null>(null);
   readonly loading = signal(false);
   readonly period = signal<PeriodType>('month');
 
-  // ── CÓMPUTOS ──
   readonly lastWeight = computed(() => {
     const user = this.selectedUser();
     if (!user) return null;
@@ -44,7 +42,6 @@ export class UserDashboardFacade {
     return this.dashboardService.buildStepsChart(user.getNeatLogs || [], this.period());
   });
 
-  // ── ACCIONES ──
   loadAllUsers(onSuccess?: (clients: User[]) => void) {
     this.loading.set(true);
     this.userService.findAll().subscribe({

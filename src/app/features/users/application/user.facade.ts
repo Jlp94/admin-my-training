@@ -13,33 +13,33 @@ export class UserFacade {
   private readonly auth = inject(AuthService);
   private readonly uiService = inject(UiService);
 
-  // Estado reactivo (rxResource)
   private readonly usersResource = rxResource({
     stream: () => this.userService.findAll()
   });
-
-  // Getters públicos computados
-  readonly activeClients = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'user' && u.getIsActive) ?? []);
-  readonly inactiveClients = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'user' && !u.getIsActive) ?? []);
-  readonly admins = computed(() => this.usersResource.value()?.filter((u: User) => u.getRole === 'admin') ?? []);
+  readonly activeClients = computed(() =>
+    this.usersResource.value()?.filter((u: User) =>
+      u.getRole === 'user' && u.getIsActive) ?? []);
+  readonly inactiveClients = computed(() =>
+    this.usersResource.value()?.filter((u: User) =>
+      u.getRole === 'user' && !u.getIsActive) ?? []);
+  readonly admins = computed(() =>
+    this.usersResource.value()?.filter((u: User) =>
+    u.getRole === 'admin') ?? []);
   readonly loading = this.usersResource.isLoading;
 
-  // Verifica si el ID proporcionado coincide con el del usuario logueado
   isCurrentUser(userId: string): boolean {
     return this.auth.currentUserId() === userId;
   }
 
 
   loadUsers() {
-    this.usersResource.reload(); // Fuerza la recarga de usuarios
+    this.usersResource.reload();
   }
 
-  // Guarda un usuario (creación o edición)
   save(formVal: any, existingUser?: User): Observable<User> | void {
     const payload = User.preparePayload(formVal, existingUser);
     
     if (existingUser) {
-      // EDICIÓN
       return this.userService.update(existingUser.getId, payload).pipe(
         map(user => {
             this.uiService.showSuccess('Usuario actualizado correctamente');
@@ -48,7 +48,6 @@ export class UserFacade {
         })
       );
     } else {
-      // CREACIÓN
       return this.userService.create(payload).pipe(
         map(user => {
             this.uiService.showSuccess('Usuario creado correctamente');
@@ -59,7 +58,6 @@ export class UserFacade {
     }
   }
 
-  // Elimina un usuario con confirmación previa
   delete(user: User) {
     if (this.isCurrentUser(user.getId)) {
       this.uiService.showError('No puedes eliminar tu propio usuario mientras estás conectado.');
@@ -77,14 +75,12 @@ export class UserFacade {
     });
   }
 
-  // Activa o desactiva la cuenta de un usuario (Alterna el estado actual)
   toggleActive(user: User) {
     if (this.isCurrentUser(user.getId)) {
       this.uiService.showError('No puedes desactivar tu propia cuenta de administrador.');
       return;
     }
 
-    // Calculamos el nuevo estado (el opuesto al actual)
     const nuevoEstado = !user.getIsActive;
     const nombre = user.getFullName() || user.getEmail;
 
@@ -100,7 +96,7 @@ export class UserFacade {
         this.userService.update(user.getId, { isActive: nuevoEstado }).subscribe({
           next: () => {
             this.uiService.showSuccess(`Usuario ${nuevoEstado ? 'activado' : 'desactivado'} correctamente`);
-            this.loadUsers(); // Recargamos para que el usuario "salte" de tabla reactivamente
+            this.loadUsers();
           },
           error: () => this.uiService.showError('Error al comunicar con el servidor')
         });

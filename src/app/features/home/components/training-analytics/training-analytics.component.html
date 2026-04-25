@@ -1,6 +1,5 @@
 <div class="space-y-6">
   
-  <!-- 1. Resumen de Adherencia Semanal -->
   @if (facade.weekSummary(); as week) {
     <div class="week-selector">
       <p-button type="button" class="week-selector__nav" 
@@ -27,7 +26,6 @@
     </div>
   }
 
-  <!-- 2. Selector de Sesión (RUTINA) -->
   @if (facade.selectedRoutine(); as routine) {
     <div class="pt-2">
       <div class="flex items-center justify-between mb-3">
@@ -51,7 +49,6 @@
     </div>
   }
 
-  <!-- 3. Buscador de Ejercicios -->
   <div class="flex flex-wrap items-center gap-3 border-t border-gray-100 dark:border-gray-800 pt-5">
     <div class="flex flex-col gap-1">
       <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Explorador de Ejercicios:</label>
@@ -76,9 +73,7 @@
     </div>
   </div>
 
-  <!-- 4. Área de Gráficas (Mosaico o Zoom) -->
   @if (facade.selectedExerciseId()) {
-    <!-- MODO ZOOM: Solo el ejercicio seleccionado -->
     @if (facade.exerciseChartData()?.labels?.length) {
       <div class="chart-card border-indigo-100! dark:border-indigo-900/30!">
         <div class="chart-card__title">
@@ -96,7 +91,6 @@
       </div>
     }
   } @else {
-    <!-- MODO MOSAICO: Todos los ejercicios de la sesión -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       @for (chartObj of facade.sessionExerciseCharts() | keyvalue; track chartObj.key) {
         <div class="chart-card hover:border-indigo-200 transition-all hover:-translate-y-1 cursor-pointer" 
@@ -124,7 +118,6 @@
     </div>
   }
 
-  <!-- 5. Actividad Detallada de la Semana (Log de Ejercicios) -->
   <div class="border-t border-gray-100 dark:border-gray-800 pt-6">
     <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
       <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>

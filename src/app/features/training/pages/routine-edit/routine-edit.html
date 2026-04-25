@@ -1,11 +1,9 @@
 <div class="p-6 h-full flex flex-col space-y-4 max-w-7xl mx-auto relative min-h-[400px]">
   
-  <!-- SPINNER DE CARGA -->
   @if (loading()) {
     <app-spinner message="Cargando estructura de la rutina..." [fullScreen]="true"></app-spinner>
   }
   
-  <!-- CABECERA -->
   <div class="flex justify-between items-center bg-white dark:bg-gray-900 px-6 py-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
     <div class="flex items-center gap-4">
       <p-button icon="fa-solid fa-arrow-left" [text]="true" severity="secondary" routerLink="/training/routines"></p-button>
@@ -24,7 +22,6 @@
 
   <form [formGroup]="routineForm" class="space-y-6">
     
-    <!-- DATOS GENERALES -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">
       <div class="md:col-span-2 flex flex-col gap-2">
         <label class="font-bold text-gray-700 dark:text-gray-300 ml-1 italic">Nombre de la Rutina</label>
@@ -56,7 +53,6 @@
       </div>
     </div>
 
-    <!-- LISTADO DE SESIONES (DÍAS) -->
     <div formArrayName="sessions" class="space-y-8">
       @for (session of sessions.controls; track session; let sessionIndex = $index) {
         <p-card [formGroupName]="sessionIndex" [id]="'session-' + sessionIndex" class="shadow-lg border-t-4 border-indigo-500 overflow-hidden">
@@ -84,7 +80,6 @@
           </ng-template>
 
           <div class="space-y-6">
-            <!-- CONFIGURACIÓN DE LA SESIÓN -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div class="flex flex-col gap-2">
                 <label class="text-xs font-bold text-gray-500 ml-1">TIPO DE RUTINA</label>
@@ -104,7 +99,6 @@
               </div>
             </div>
 
-            <!-- EJERCICIOS DEL DÍA -->
             <div class="border-t border-gray-100 dark:border-gray-800 pt-6">
               <div class="flex justify-between items-center mb-4 px-2">
                 <h3 class="font-bold text-lg text-gray-700 dark:text-gray-300 italic flex items-center gap-2">
@@ -117,7 +111,6 @@
                 @for (exGroup of getExercises(sessionIndex).controls; track exGroup; let exerciseIndex = $index) {
                   <div [formGroupName]="exerciseIndex" [id]="'exercise-' + sessionIndex + '-' + exerciseIndex" class="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-indigo-300 transition-colors">
                     
-                    <!-- FILA DE SELECCIÓN Y CONFIG BÁSICA (SIMÉTRICA) -->
                     <div class="flex flex-wrap md:flex-nowrap gap-3 items-end">
                       <div class="flex-1 min-w-[150px] flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Buscar por Grupo</label>
@@ -127,14 +120,14 @@
                       <div class="flex-1 min-w-[200px] flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1">Ejercicio Seleccionado</label>
                         <p-select [options]="getExercisesForGroup($any(exGroup).get('muscleGroup')?.value)" 
-                                 formControlName="exerciseId" 
-                                 fluid
-                                 appendTo="body"
-                                 optionLabel="name" 
-                                 optionValue="_id" 
-                                 [filter]="true"
-                                 placeholder="Selecciona ejercicio..."
-                                 >
+                                formControlName="exerciseId" 
+                                fluid
+                                appendTo="body"
+                                optionLabel="name" 
+                                optionValue="_id" 
+                                [filter]="true"
+                                placeholder="Selecciona ejercicio..."
+                                >
                         </p-select>
                       </div>
 
@@ -153,7 +146,6 @@
                       </div>
                     </div>
 
-                    <!-- OBSERVACIONES Y TEMPO (ESTILO MORADITO) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-indigo-500 uppercase ml-1 flex items-center gap-1">
@@ -183,7 +175,6 @@
                       </div>
                     </div>
 
-                    <!-- SERIES (EL SISTEMA DE GRID COMPACTO) -->
                     <div class="mt-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
                       <div class="flex justify-between items-center mb-2">
                         <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest italic">Series Programadas</span>
@@ -222,7 +213,6 @@
                     </div>
                   </div>
                 }
-                <!-- BOTÓN AÑADIR EJERCICIO AL FINAL -->
                 <div class="flex justify-center mt-6">
                   <p-button label="Añadir Ejercicio" icon="fa-solid fa-plus" [outlined]="true" size="small" severity="info" (onClick)="addExerciseToSession($any(session))" pTooltip="Añadir nuevo ejercicio a esta sesión"></p-button>
                 </div>
@@ -233,7 +223,6 @@
       }
     </div>
 
-    <!-- BOTONE FINAL -->
     <div class="flex justify-center pt-8 pb-12">
       <p-button label="Añadir Día de Entrenamiento" icon="fa-solid fa-plus" severity="secondary" [outlined]="true" size="large" (onClick)="addSession()"></p-button>
     </div>

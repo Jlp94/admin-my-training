@@ -39,7 +39,6 @@ export class RoutineList {
   protected readonly routines = computed(() => this.routinesResource.value() ?? []);
   protected readonly loading = this.routinesResource.isLoading;
   
-  // Mapa para cachear los usuarios asignados a cada rutina expandida
   protected readonly assignedUsersMap = signal<Record<string, User[]>>({ });
   protected readonly loadingUsers = signal<Record<string, boolean>>({ });
 

@@ -18,7 +18,6 @@ import { Toast } from "primeng/toast";
 export class DietAnalyticsComponent {
   public readonly facade = inject(DashboardFacade);
 
-  // Opciones de la gráfica circular de macros (Main & Mini)
   readonly macroChartOptions: any = {
     plugins: {
       legend: { display: false }
@@ -29,8 +28,6 @@ export class DietAnalyticsComponent {
     animation: { duration: 800 }
   };
 
-  // Procesa la dieta seleccionada para obtener desgloses por comida,
-  // resolviendo alimentos y calculando macros exactos.
   readonly mealSummaries = computed(() => {
     const diet = this.facade.selectedDiet();
     const foods = this.facade.allFoods();
@@ -42,7 +39,6 @@ export class DietAnalyticsComponent {
       const processedFoods = (meal.foods || []).map(mf => {
         const food = foods.find(f => f._id === mf.foodId);
         
-        // Cálculo basado en que los macros del 'food' vienen por cada 100g
         const factor = mf.quantity / 100;
         const p = (food?.protein || 0) * factor;
         const c = (food?.carbs || 0) * factor;

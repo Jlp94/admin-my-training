@@ -1,14 +1,12 @@
 import { UserInterface, UserProfileInterface, UserMacrosInterface, UserNeatInterface, WorkoutLogInterface, DietLogInterface } from './user.interface';
 
 export class User {
-  // ── PROPIEDADES PRIVADAS ──
   private _id: string;
   private email: string;
   private role: 'admin' | 'user';
   private isActive: boolean;
   private profile: UserProfileInterface;
 
-  // ── CONSTRUCTOR ──
   constructor(user: UserInterface) {
     this._id = user._id;
     this.email = user.email;
@@ -17,7 +15,6 @@ export class User {
     this.profile = user.profile;
   }
 
-  // ── GETTERS (Propiedades del Core) ──
   get getId(): string {
     return this._id;
   }
@@ -105,12 +102,10 @@ export class User {
     return this.profile?.dietLogs ?? [];
   }
 
-  // ── SETTERS ──
   set setIsActive(value: boolean) {
     this.isActive = value;
   }
 
-  // ── MÉTODOS DE DOMINIO ──
   getFullName(): string {
     return `${this.profile?.name || ''} ${this.profile?.lastName || ''}`.trim() || 'Usuario sin nombre';
   }
@@ -126,10 +121,6 @@ export class User {
     return lastLog?.weight ?? '—';
   }
 
-  // ── UTILERÍA ESTÁTICA ──
-  /**
-   * Genera el objeto de datos que se enviará a la API (payload).
-   */
   static preparePayload(formVal: any, existingUser?: User): any {
     if (existingUser) {
       const payload: any = {

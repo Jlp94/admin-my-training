@@ -16,7 +16,6 @@ export class TrainingDashboardFacade {
   private readonly userFacade = inject(UserDashboardFacade);
   private readonly http = inject(HttpClient);
 
-  // ── ESTADO ──
   readonly selectedRoutine = signal<Routine | null>(null);
   readonly activeSessionIndex = signal<number>(0);
   readonly weekOffset = signal<number>(0);
@@ -25,7 +24,6 @@ export class TrainingDashboardFacade {
   readonly selectedExerciseId = signal<string | null>(null);
   readonly loadingExercise = signal(false);
 
-  // ── CÓMPUTOS ──
   readonly weekSummary = computed(() => {
     const user = this.userFacade.selectedUser();
     const offset = this.weekOffset();
@@ -73,7 +71,6 @@ export class TrainingDashboardFacade {
     return this.dashboardService.buildExerciseChart(data, this.userFacade.period());
   });
 
-  // ── ACCIONES ──
   selectRoutine(id: string) {
     this.routineService.findOne(id).subscribe((r) => {
       this.selectedRoutine.set(r);
@@ -107,7 +104,6 @@ export class TrainingDashboardFacade {
     this.loadSessionProgressions();
   }
 
-  // Ahora delegamos el periodo al userFacade para que se sincronice con peso/pasos
   setPeriod(p: PeriodType) {
     this.userFacade.setPeriod(p);
     this.loadSessionProgressions();

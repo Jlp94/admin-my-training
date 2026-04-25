@@ -1,15 +1,12 @@
 <div class="h-screen flex flex-col bg-slate-700 dark:bg-gray-950 overflow-hidden">
   
-  <!-- Topbar (Off-white con sombra suave) -->
   <header class="h-12 shrink-0 bg-blue-900  dark:bg-gray-900 border-b border-gray-900 dark:border-gray-700 text-gray-100 dark:text-gray-100 flex items-center justify-between px-4 sm:px-6 shadow-sm z-10 w-full relative">
     
-    <!-- Left: Logo & Branding -->
     <div class="flex items-center gap-3 h-full cursor-pointer hover:opacity-80 transition-opacity" routerLink="/dashboard">
       <img src="/images/logo.png" alt="Logo" class="h-8 w-8 rounded-full object-cover" />
       <span class="font-bold text-xl tracking-wide hidden sm:block text-gray-100 dark:text-gray-0">MyTraining Admin</span>
     </div>
 
-    <!-- Right: Actions & User Info -->
     <div class="flex items-center gap-4">
       <div class="hidden sm:flex items-center gap-2 bg-blue-800 dark:bg-gray-800 px-3 py-1.5 rounded-full border border-blue-700 dark:border-gray-700 shadow-sm transition-all hover:bg-blue-700">
         <i class="fa-solid fa-user-shield text-[10px] text-blue-200"></i>
@@ -29,17 +26,14 @@
     </div>
   </header>
 
-  <!-- Body Row bg-surface-100 para que se note la separación con el panel blanco/grisáceo -->
   <div class="flex-1 flex overflow-hidden w-full relative bg-surface-100 dark:bg-surface-950">
     
-    <!-- Vertical Nav (Sidebar estilo Clarity off-white) -->
     <aside 
       class="h-full bg-gray-1100 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] flex flex-col transition-all duration-200 ease-in-out z-20 relative"
       [class.w-16]="collapsed()" 
       [class.w-56]="!collapsed()"
     >
       
-      <!-- Nav Trigger (Clarity style top button) -->
       <button 
         type="button"
         (click)="toggleSidebar()" 
@@ -55,7 +49,6 @@
           [class.fa-angles-left]="!collapsed()"></i>
       </button>
 
-      <!-- Nav Content -->
       <nav class="flex-1 overflow-y-auto py-2 flex flex-col gap-1">
         @for (item of navItems; track item.route) {
           <a 
@@ -66,7 +59,6 @@
             [pTooltip]="collapsed() ? item.label : ''"
             tooltipPosition="right"
           >
-            <!-- Contenedor del icono centrado -->
             <div class="w-15 flex items-center justify-center shrink-0">
               <i [class]="item.icon + ' text-[1.65rem] flex items-center justify-center text-blue-800 dark:text-blue-300'"></i>
             </div>
@@ -84,7 +76,6 @@
 
     </aside>
 
-    <!-- Main Content Area -->
     <main class="flex-1 overflow-y-auto bg-slate-200 dark:bg-slate-950 flex flex-col relative">
       <div class="flex-1 p-6 z-0 relative">
         <router-outlet></router-outlet>
@@ -93,7 +84,6 @@
 
   </div>
 
-  <!-- Global Footer (Ocupa todo el ancho inferior y centra sus elementos) -->
   <footer class="bg-blue-900 dark:bg-blue-900 border-t border-gray-200 dark:border-gray-700 py-3 shrink-0 z-10 relative">
     <div class="flex flex-col items-center justify-center gap-2 text-xs text-gray-100">
       <div class="flex gap-4 font-medium">

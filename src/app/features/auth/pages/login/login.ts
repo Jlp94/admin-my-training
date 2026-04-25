@@ -18,17 +18,14 @@ export class Login {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
-  // Formulario reactivo
   readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     rememberMe: [false]
   });
 
-  // Estado UI
   readonly loading = signal(false);
 
-  // Getter útil para no repetir hasError
   isInvalid(field: string): boolean {
     const control = this.loginForm.get(field);
     return control ? (control.invalid && (control.dirty || control.touched)) : false;

@@ -11,35 +11,30 @@ export class UserService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/users`;
 
-  // Obtener todos los usuarios
   findAll(): Observable<User[]> {
     return this.http.get<ApiResponse<UserInterface[]>>(this.base).pipe(
       map(response => response.data.map((user: UserInterface) => new User(user)))
     );
   }
 
-  // Obtener un usuario por ID
   findOne(id: string): Observable<User> {
     return this.http.get<ApiResponse<UserInterface>>(`${this.base}/${id}`).pipe(
       map(response => new User(response.data))
     );
   }
 
-  // Crear un nuevo usuario (POST)
   create(payload: Partial<UserInterface>): Observable<User> {
     return this.http.post<ApiResponse<UserInterface>>(this.base, payload).pipe(
       map(response => new User(response.data))
     );
   }
 
-  // Actualizar un usuario existente (PATCH)
   update(id: string, payload: Partial<UserInterface>): Observable<User> {
     return this.http.patch<ApiResponse<UserInterface>>(`${this.base}/${id}`, payload).pipe(
       map(response => new User(response.data))
     );
   }
 
-  // Eliminar un usuario
   remove(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
