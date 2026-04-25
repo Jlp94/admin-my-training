@@ -42,6 +42,16 @@ yarn-error.log
 testem.log
 /typings
 
+# Environment files
+.env
+.env.*
+src/environments/.env
+
+# AI and local config
+/.claude
+/.gemini
+/PROJECT_RULES.md
+
 # System files
 .DS_Store
 Thumbs.db

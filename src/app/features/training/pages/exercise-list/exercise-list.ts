@@ -94,7 +94,13 @@ export class ExerciseList {
     }
 
     this.saving.set(true);
-    const payload = this.exerciseForm.value;
+    
+    const formVal = this.exerciseForm.value;
+    const payload = {
+      ...formVal,
+      tags: [],
+      videoUrl: formVal.videoUrl || 'https://youtube.com'
+    };
 
     if (this.isEditing() && this.currentExerciseId) {
       this.exerciseService.update(this.currentExerciseId, payload)
