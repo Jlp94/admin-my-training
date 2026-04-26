@@ -117,4 +117,8 @@ export class DashboardFacade {
   changeWeek(delta: number) {
     this.trainingFacade.changeWeek(delta);
   }
+
+  updateSelectedUser(user: User) {
+    this.userFacade.updateSelectedUser(user);
+  }
 }

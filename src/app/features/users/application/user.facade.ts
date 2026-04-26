@@ -47,6 +47,14 @@ export class UserFacade {
             return user;
         })
       );
+    } else if (formVal.role === 'admin') {
+      return this.userService.createAdmin(payload).pipe(
+        map(user => {
+            this.uiService.showSuccess('Administrador creado correctamente');
+            this.loadUsers();
+            return user;
+        })
+      );
     } else {
       return this.userService.create(payload).pipe(
         map(user => {

@@ -64,4 +64,9 @@ export class UserDashboardFacade {
   setPeriod(p: PeriodType) {
     this.period.set(p);
   }
+
+  updateSelectedUser(updatedUser: User) {
+    this.selectedUser.set(updatedUser);
+    this.users.update(list => list.map(u => u.getId === updatedUser.getId ? updatedUser : u));
+  }
 }

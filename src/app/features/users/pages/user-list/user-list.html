@@ -129,7 +129,8 @@
             </td>
             <td>
               <div class="flex justify-center gap-1">
-                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteUser(user)"></p-button>
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (onClick)="editUser(user)" pTooltip="Editar" tooltipPosition="left"></p-button>
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteUser(user)" pTooltip="Eliminar" tooltipPosition="left"></p-button>
               </div>
             </td>
           </tr>
@@ -150,9 +151,10 @@
         responsiveLayout="scroll">
         <ng-template pTemplate="header">
           <tr>
-            <th class="w-1/3"><div class="text-left ml-2">Nombre</div></th>
-            <th class="w-1/3"><div class="text-left">Email</div></th>
-            <th class="w-1/3"><div class="text-center">Estado</div></th>
+            <th class="w-1/4"><div class="text-left ml-2">Nombre</div></th>
+            <th class="w-1/4"><div class="text-left">Email</div></th>
+            <th><div class="text-center">Estado</div></th>
+            <th class="w-32"><div class="text-center">Acciones</div></th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-admin>
@@ -178,6 +180,14 @@
                 }
               </div>
             </td>
+            <td>
+              <div class="flex justify-center gap-1">
+                @if (!facade.isCurrentUser(admin.getId)) {
+                  <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" (onClick)="editUser(admin)" pTooltip="Editar" tooltipPosition="left"></p-button>
+                  <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="deleteUser(admin)" pTooltip="Eliminar" tooltipPosition="left"></p-button>
+                }
+              </div>
+            </td>
           </tr>
         </ng-template>
       </p-table>
@@ -189,76 +199,102 @@
   [(visible)]="showDialog" 
   [header]="isEditing() ? 'Editar Usuario' : 'Nuevo Usuario'" 
   [modal]="true" 
-  class="p-fluid shadow-xl w-[550px]"
+  [style]="{ width: '35vw' }"
+  [contentStyle]="{ overflow: 'auto' }"
   (onHide)="closeDialog()">
   
   <form [formGroup]="userForm" class="flex flex-col gap-4 mt-3">
-    
+
+    <!-- Selector de Rol (solo al crear) -->
+    @if (!isEditing()) {
+      <div class="flex flex-col gap-2">
+        <label for="role" class="font-semibold text-gray-700 dark:text-gray-300">Tipo de cuenta</label>
+        <p-select id="role" formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" appendTo="body"
+          [class.is-invalid]="userForm.get('role')?.touched && userForm.get('role')?.invalid"
+          [class.is-valid]="userForm.get('role')?.valid"></p-select>
+      </div>
+    }
+
+    <!-- Campos comunes: Nombre y Apellidos -->
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
         <label for="name" class="font-semibold text-gray-700 dark:text-gray-300">Nombre</label>
-        <input pInputText id="name" formControlName="name" placeholder="Ej: Jose" autofocus />
+        <input pInputText id="name" formControlName="name" placeholder="Ej: Jose" autofocus
+          [class.is-invalid]="userForm.get('name')?.touched && userForm.get('name')?.invalid"
+          [class.is-valid]="userForm.get('name')?.valid" />
+        @if (userForm.get('name')?.invalid && userForm.get('name')?.touched) {
+          <small class="text-red-500">El nombre es obligatorio.</small>
+        }
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="lastName" class="font-semibold text-gray-700 dark:text-gray-300">Apellidos</label>
-        <input pInputText id="lastName" formControlName="lastName" placeholder="Ej: Garcia" />
+        <input pInputText id="lastName" formControlName="lastName" placeholder="Ej: Garcia"
+          [class.is-invalid]="userForm.get('lastName')?.touched && userForm.get('lastName')?.invalid"
+          [class.is-valid]="userForm.get('lastName')?.valid" />
+        @if (userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched) {
+          <small class="text-red-500">Los apellidos son obligatorios.</small>
+        }
       </div>
     </div>
 
+    <!-- Campos comunes: Email y Contraseña -->
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
-        <label for="email" class="font-semibold text-gray-700 dark:text-gray-300">Correo Electrónico *</label>
-        <input pInputText id="email" formControlName="email" type="email" placeholder="cliente@email.com" />
+        <label for="email" class="font-semibold text-gray-700 dark:text-gray-300">Correo Electrónico</label>
+        <input pInputText id="email" formControlName="email" type="email" placeholder="cliente@email.com" autocomplete="off"
+          [class.is-invalid]="userForm.get('email')?.touched && userForm.get('email')?.invalid"
+          [class.is-valid]="userForm.get('email')?.valid" />
         @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
           <small class="text-red-500">Un correo válido es obligatorio.</small>
         }
       </div>
 
-      @if (!isEditing()) {
-        <div class="flex flex-col gap-2">
-          <label for="password" class="font-semibold text-gray-700 dark:text-gray-300">Contraseña *</label>
-          <input pInputText id="password" formControlName="password" type="password" placeholder="Mín. 6 caracteres" />
-          @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
-            <small class="text-red-500">La contraseña debe tener al menos 6 caracteres.</small>
-          }
-        </div>
-      } @else {
-        <div class="flex flex-col gap-2">
-          <label for="role" class="font-semibold text-gray-700 dark:text-gray-300">Rol</label>
-          <p-select id="role" formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" appendTo="body"></p-select>
-        </div>
-      }
+      <div class="flex flex-col gap-2">
+        <label for="password" class="font-semibold text-gray-700 dark:text-gray-300">
+          {{ isEditing() ? 'Nueva Contraseña (opcional)' : 'Contraseña' }}
+        </label>
+        <input pInputText id="password" formControlName="password" type="password" placeholder="Mín. 6 caracteres" autocomplete="new-password"
+          [class.is-invalid]="userForm.get('password')?.touched && userForm.get('password')?.invalid"
+          [class.is-valid]="userForm.get('password')?.valid && userForm.get('password')?.value" />
+        @if (userForm.get('password')?.invalid && userForm.get('password')?.touched) {
+          <small class="text-red-500">La contraseña debe tener al menos 6 caracteres.</small>
+        }
+      </div>
     </div>
 
-    @if (!isEditing()) {
-      <div class="grid grid-cols-1 gap-4">
-        <div class="flex flex-col gap-2">
-          <label for="role" class="font-semibold text-gray-700 dark:text-gray-300">Rol</label>
-          <p-select id="role" formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" appendTo="body"></p-select>
-        </div>
+    <!-- Rol (solo al editar) -->
+    @if (isEditing()) {
+      <div class="flex flex-col gap-2">
+        <label for="roleEdit" class="font-semibold text-gray-700 dark:text-gray-300">Rol</label>
+        <p-select id="roleEdit" formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" appendTo="body"></p-select>
       </div>
     }
 
-    <!-- Módulo de métricas -->
-    <div class="border-t border-gray-100 dark:border-gray-800 pt-4 grid grid-cols-2 gap-4">
-      <div class="flex flex-col gap-2">
-        <label for="height" class="font-semibold text-gray-700 dark:text-gray-300">Altura (cm)</label>
-        <p-inputNumber id="height" formControlName="height" [min]="0" [max]="300" suffix=" cm" placeholder="Ej: 175"></p-inputNumber>
-      </div>
+    <!-- Campos exclusivos de CLIENTE (solo si role = 'user') -->
+    @if (userForm.get('role')?.value === 'user') {
+      <div class="border-t border-gray-100 dark:border-gray-800 pt-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-3">Datos físicos del cliente</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-2">
+            <label for="height" class="font-semibold text-gray-700 dark:text-gray-300">Altura (cm)</label>
+            <p-inputNumber id="height" formControlName="height" [min]="100" [max]="230" suffix=" cm" placeholder="Ej: 175"
+              [class.is-invalid]="userForm.get('height')?.touched && userForm.get('height')?.invalid"
+              [class.is-valid]="userForm.get('height')?.valid"></p-inputNumber>
+            @if (userForm.get('height')?.invalid && userForm.get('height')?.touched) {
+              <small class="text-red-500">La altura es obligatoria (100-230 cm).</small>
+            }
+          </div>
 
-      <div class="flex flex-col gap-2">
-        <label for="weight" class="font-semibold text-gray-700 dark:text-gray-300">Peso Base (kg)</label>
-        <p-inputNumber id="weight" formControlName="weight" [min]="0" [maxFractionDigits]="1" suffix=" kg" placeholder="Ej: 70.5"></p-inputNumber>
-      </div>
-    </div>
-
-    @if (!isEditing()) {
-      <div class="flex items-center gap-3 border border-indigo-100 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-xl mt-1">
-        <p-toggleSwitch formControlName="isActive"></p-toggleSwitch>
-        <div class="flex flex-col">
-          <span class="font-semibold text-indigo-900 dark:text-indigo-200">Activar directamente</span>
-          <span class="text-xs text-indigo-600 dark:text-indigo-400">El usuario podrá iniciar sesión nada más crearlo.</span>
+          <div class="flex flex-col gap-2">
+            <label for="weight" class="font-semibold text-gray-700 dark:text-gray-300">Peso Base (kg)</label>
+            <p-inputNumber id="weight" formControlName="weight" [min]="30" [max]="200" [maxFractionDigits]="1" suffix=" kg" placeholder="Ej: 70.5"
+              [class.is-invalid]="userForm.get('weight')?.touched && userForm.get('weight')?.invalid"
+              [class.is-valid]="userForm.get('weight')?.valid"></p-inputNumber>
+            @if (userForm.get('weight')?.invalid && userForm.get('weight')?.touched) {
+              <small class="text-red-500">El peso es obligatorio (30-200 kg).</small>
+            }
+          </div>
         </div>
       </div>
     }

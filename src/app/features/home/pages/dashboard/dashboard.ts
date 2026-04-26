@@ -11,6 +11,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TrainingAnalyticsComponent } from '../../components/training-analytics/training-analytics.component';
 import { DietAnalyticsComponent } from '../../components/diet-analytics/diet-analytics.component';
 import { CardioAnalyticsComponent } from '../../components/cardio-analytics/cardio-analytics.component';
+import { CalculatorNeatAnalyticsComponent } from '../../components/calculator-neat-analytics/calculator-neat-analytics.component';
 
 import { DashboardFacade } from '../../application/dashboard.facade';
 
@@ -20,7 +21,7 @@ import { DashboardFacade } from '../../application/dashboard.facade';
   imports: [
     CommonModule, FormsModule, SelectModule, ChartModule, ButtonModule, TooltipModule,
     TagModule, SkeletonModule, TabsModule,
-    TrainingAnalyticsComponent, DietAnalyticsComponent, CardioAnalyticsComponent
+    TrainingAnalyticsComponent, DietAnalyticsComponent, CardioAnalyticsComponent, CalculatorNeatAnalyticsComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',

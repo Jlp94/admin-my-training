@@ -100,9 +100,11 @@
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
         <label for="foodName" class="font-semibold text-gray-700 dark:text-gray-300">Nombre del Alimento</label>
-        <input pInputText id="foodName" formControlName="name" placeholder="Ej: Pechuga de pollo" autofocus />
+        <input pInputText id="foodName" formControlName="name" placeholder="Ej: Pechuga de pollo" autofocus
+          [class.is-invalid]="foodForm.get('name')?.touched && foodForm.get('name')?.invalid"
+          [class.is-valid]="foodForm.get('name')?.valid" />
         @if (foodForm.get('name')?.invalid && foodForm.get('name')?.touched) {
-          <small class="text-red-500">Este campo es obligatorio.</small>
+          <small class="text-red-500">El nombre es obligatorio.</small>
         }
       </div>
 
@@ -115,45 +117,63 @@
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
         <label for="category" class="font-semibold text-gray-700 dark:text-gray-300">Categoría</label>
-        <p-select id="category" formControlName="category" [options]="categoryOptions" optionLabel="label" optionValue="value" placeholder="Selecciona grupo..." appendTo="body"></p-select>
+        <p-select id="category" formControlName="category" [options]="categoryOptions" optionLabel="label" optionValue="value" placeholder="Selecciona grupo..." appendTo="body"
+          [class.is-invalid]="foodForm.get('category')?.touched && foodForm.get('category')?.invalid"
+          [class.is-valid]="foodForm.get('category')?.valid"></p-select>
+        @if (foodForm.get('category')?.invalid && foodForm.get('category')?.touched) {
+          <small class="text-red-500">La categoría es obligatoria.</small>
+        }
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="nutritionalType" class="font-semibold text-gray-700 dark:text-gray-300">Tipo Nutricional</label>
-        <p-select id="nutritionalType" formControlName="nutritionalType" [options]="typeOptions" optionLabel="label" optionValue="value" placeholder="Selecciona tipo..." appendTo="body"></p-select>
+        <p-select id="nutritionalType" formControlName="nutritionalType" [options]="typeOptions" optionLabel="label" optionValue="value" placeholder="Selecciona tipo..." appendTo="body"
+          [class.is-invalid]="foodForm.get('nutritionalType')?.touched && foodForm.get('nutritionalType')?.invalid"
+          [class.is-valid]="foodForm.get('nutritionalType')?.valid"></p-select>
+        @if (foodForm.get('nutritionalType')?.invalid && foodForm.get('nutritionalType')?.touched) {
+          <small class="text-red-500">El tipo nutricional es obligatorio.</small>
+        }
       </div>
     </div>
 
     <div class="grid grid-cols-4 gap-4">
       <div class="flex flex-col gap-2">
         <label for="protein" class="font-semibold text-gray-700 dark:text-gray-300">Proteínas (g)</label>
-        <p-inputNumber id="protein" fluid formControlName="protein" [min]="0" [maxFractionDigits]="1" suffix=" g"/>
+        <p-inputNumber id="protein" fluid formControlName="protein" [min]="0" [maxFractionDigits]="1" suffix=" g"
+          [class.is-invalid]="foodForm.get('protein')?.touched && foodForm.get('protein')?.invalid"
+          [class.is-valid]="foodForm.get('protein')?.valid"/>
         @if (foodForm.get('protein')?.invalid && foodForm.get('protein')?.touched) {
-          <small class="text-red-500">Este campo es obligatorio.</small>
+          <small class="text-red-500">Obligatorio.</small>
         }
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="carbs" class="font-semibold text-gray-700 dark:text-gray-300">Carbos (g)</label>
-        <p-inputNumber id="carbs" fluid formControlName="carbs" [min]="0" [maxFractionDigits]="1" suffix=" g"/>
+        <p-inputNumber id="carbs" fluid formControlName="carbs" [min]="0" [maxFractionDigits]="1" suffix=" g"
+          [class.is-invalid]="foodForm.get('carbs')?.touched && foodForm.get('carbs')?.invalid"
+          [class.is-valid]="foodForm.get('carbs')?.valid"/>
         @if (foodForm.get('carbs')?.invalid && foodForm.get('carbs')?.touched) {
-          <small class="text-red-500">Este campo es obligatorio.</small>
+          <small class="text-red-500">Obligatorio.</small>
         }
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="fat" class="font-semibold text-gray-700 dark:text-gray-300">Grasas (g)</label>
-        <p-inputNumber id="fat" fluid formControlName="fat" [min]="0" [maxFractionDigits]="1" suffix=" g"/>
+        <p-inputNumber id="fat" fluid formControlName="fat" [min]="0" [maxFractionDigits]="1" suffix=" g"
+          [class.is-invalid]="foodForm.get('fat')?.touched && foodForm.get('fat')?.invalid"
+          [class.is-valid]="foodForm.get('fat')?.valid"/>
         @if (foodForm.get('fat')?.invalid && foodForm.get('fat')?.touched) {
-          <small class="text-red-500">Este campo es obligatorio.</small>
+          <small class="text-red-500">Obligatorio.</small>
         }
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="kcal" class="font-semibold text-gray-700 dark:text-gray-300">Kcal</label>
-        <p-inputNumber id="kcal" fluid formControlName="kcal" [min]="0" suffix=" kcal"/>
+        <p-inputNumber id="kcal" fluid formControlName="kcal" [min]="0" suffix=" kcal"
+          [class.is-invalid]="foodForm.get('kcal')?.touched && foodForm.get('kcal')?.invalid"
+          [class.is-valid]="foodForm.get('kcal')?.valid"/>
         @if (foodForm.get('kcal')?.invalid && foodForm.get('kcal')?.touched) {
-          <small class="text-red-500">Este campo es obligatorio.</small>
+          <small class="text-red-500">Obligatorio.</small>
         }
       </div>
     </div>
@@ -164,3 +184,4 @@
     <p-button label="Guardar" icon="fa-solid fa-check" severity="info" [loading]="saving()" (onClick)="saveFood()"></p-button>
   </ng-template>
 </p-dialog>
+dialog>

@@ -13,6 +13,7 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
 
 import { UserFacade } from '../../application/user.facade';
 import { User } from '../../domain/user.model';
+import { UiService } from '../../../../shared/services/ui.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -29,6 +30,7 @@ import { CommonModule } from '@angular/common';
 export class UserList implements OnInit {
   protected readonly facade = inject(UserFacade);
   private readonly fb = inject(FormBuilder);
+  private readonly uiService = inject(UiService);
 
   protected readonly showDialog = signal(false);
   protected readonly isEditing = signal(false);
@@ -45,13 +47,27 @@ export class UserList implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.minLength(6)]], 
     role: ['user', Validators.required],
-    isActive: [true],
     name: ['', Validators.required],
     lastName: ['', Validators.required],
-    height: [null],
-    weight: [null]
+    height: [null, [Validators.required, Validators.min(100), Validators.max(250)]],
+    weight: [null, [Validators.required, Validators.min(30), Validators.max(300)]]
   });
 
+  constructor() {
+    this.userForm.get('role')?.valueChanges.subscribe(role => {
+      const height = this.userForm.get('height');
+      const weight = this.userForm.get('weight');
+      if (role === 'admin') {
+        height?.clearValidators();
+        weight?.clearValidators();
+      } else {
+        height?.setValidators([Validators.required, Validators.min(100), Validators.max(250)]);
+        weight?.setValidators([Validators.required, Validators.min(30), Validators.max(300)]);
+      }
+      height?.updateValueAndValidity();
+      weight?.updateValueAndValidity();
+    });
+  }
 
   ngOnInit() {
     this.facade.loadUsers();
@@ -60,7 +76,7 @@ export class UserList implements OnInit {
   openNew() {
     this.currentUser = undefined;
     this.isEditing.set(false);
-    this.userForm.reset({ role: 'user', isActive: true });
+    this.userForm.reset({ role: 'user' });
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.userForm.get('password')?.updateValueAndValidity();
     this.showDialog.set(true);
@@ -96,7 +112,11 @@ export class UserList implements OnInit {
     if (result) {
       result.subscribe({
         next: () => this.closeDialog(),
-        error: () => this.saving.set(false)
+        error: (err: any) => {
+          const msg = err?.error?.error?.message || err?.error?.message || 'Error al guardar el usuario';
+          this.uiService.showError(typeof msg === 'string' ? msg : msg[0]);
+          this.saving.set(false);
+        }
       });
     } else {
       this.saving.set(false);

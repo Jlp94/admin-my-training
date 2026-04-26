@@ -271,7 +271,75 @@
 
       <!-- COLUMNA DERECHA: RESUMEN (2/12) -->
       <div class="lg:col-span-2 lg:sticky lg:top-8 space-y-4">
-        <!-- CARD TRANSLÚCIDA ESTRECHA -->
+
+        <!-- CARD MACROS DEL CLIENTE -->
+        @if (selectedUserMacros(); as macros) {
+          <div
+            class="relative overflow-hidden bg-violet-100/30 dark:bg-violet-950/20 backdrop-blur-xl rounded-4xl border-2 border-dashed border-violet-500/40 shadow-xl shadow-violet-500/5 flex flex-col items-stretch"
+          >
+            <div class="relative p-4">
+              <h3
+                class="text-[15px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-400 mb-3 flex items-center gap-2 justify-center"
+              >
+                <i class="fa-solid fa-bullseye"></i>
+                Macros
+              </h3>
+
+              <!-- KCAL OBJETIVO -->
+              <div
+                class="flex flex-col items-center justify-center py-4 mb-4 bg-violet-500/15 dark:bg-white/5 rounded-3xl border border-violet-500/10"
+              >
+                <span class="text-3xl font-black text-gray-800 dark:text-white tracking-tighter">{{
+                  macros.targetKcal
+                }}</span>
+                <span class="text-[12px] font-black uppercase tracking-widest text-violet-600 mt-0.5"
+                  >kcal objetivo</span
+                >
+              </div>
+
+              <!-- MACROS EN COLUMNA -->
+              <div class="space-y-2">
+                <div
+                  class="flex justify-between items-center bg-red-200/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-red-200/40 dark:border-red-200/40"
+                >
+                  <span class="text-[12px] font-black uppercase tracking-widest text-red-500"
+                    >Pro</span
+                  >
+                  <span class="text-sm font-black text-gray-800 dark:text-gray-100"
+                    >{{ macros.protein
+                    }}<span class="text-[12px] ml-0.5 opacity-30 font-bold">g</span></span
+                  >
+                </div>
+
+                <div
+                  class="flex justify-between items-center bg-yellow-200/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-yellow-200/40 dark:border-yellow-200/40"
+                >
+                  <span class="text-[12px] font-black uppercase tracking-widest text-yellow-600"
+                    >CH</span
+                  >
+                  <span class="text-sm font-black text-gray-800 dark:text-gray-100"
+                    >{{ macros.carbs
+                    }}<span class="text-[12px] ml-0.5 opacity-30 font-bold">g</span></span
+                  >
+                </div>
+
+                <div
+                  class="flex justify-between items-center bg-blue-200/40 dark:bg-gray-800/50 px-3 py-2 rounded-xl border border-blue-200/40 dark:border-blue-200/40"
+                >
+                  <span class="text-[12px] font-black uppercase tracking-widest text-blue-500"
+                    >Grasa</span
+                  >
+                  <span class="text-sm font-black text-gray-800 dark:text-gray-100"
+                    >{{ macros.fat
+                    }}<span class="text-[12px] ml-0.5 opacity-30 font-bold">g</span></span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- CARD TRANSLÚCIDA ESTRECHA (RESUMEN) -->
         <div
           class="relative overflow-hidden bg-blue-100/30 dark:bg-blue-950/20 backdrop-blur-xl rounded-4xl border-2 border-dashed border-blue-500/40 shadow-xl shadow-blue-500/5 flex flex-col items-stretch"
         >

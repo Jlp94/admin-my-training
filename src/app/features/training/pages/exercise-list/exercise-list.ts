@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -58,8 +58,21 @@ export class ExerciseList {
       movementTypes: [[], Validators.required],
       categories: [[], Validators.required],
       description: ['', Validators.required],
-      videoUrl: ['']
+      tags: this.fb.array([], Validators.required),
+      videoUrl: ['', Validators.required]
     });
+  }
+
+  get tags(): FormArray {
+    return this.exerciseForm.get('tags') as FormArray;
+  }
+
+  addTag(value = '') {
+    this.tags.push(this.fb.control(value));
+  }
+
+  removeTag(index: number) {
+    this.tags.removeAt(index);
   }
 
   loadExercises() {
@@ -70,6 +83,7 @@ export class ExerciseList {
     this.currentExerciseId = undefined;
     this.isEditing.set(false);
     this.exerciseForm.reset();
+    this.tags.clear();
     this.showDialog.set(true);
   }
 
@@ -84,6 +98,8 @@ export class ExerciseList {
       description: exercise.description,
       videoUrl: exercise.videoUrl
     });
+    this.tags.clear();
+    (exercise.tags || []).forEach(t => this.addTag(t));
     this.showDialog.set(true);
   }
 
@@ -98,8 +114,7 @@ export class ExerciseList {
     const formVal = this.exerciseForm.value;
     const payload = {
       ...formVal,
-      tags: [],
-      videoUrl: formVal.videoUrl || 'https://youtube.com'
+      tags: (formVal.tags || []).filter((t: string) => t.trim())
     };
 
     if (this.isEditing() && this.currentExerciseId) {

@@ -29,6 +29,9 @@ export interface UserMacrosInterface {
   protein: number;
   carbs: number;
   fat: number;
+  pProtein?: number;
+  pCarbs?: number;
+  pFat?: number;
   extraKcal?: number;
 }
 

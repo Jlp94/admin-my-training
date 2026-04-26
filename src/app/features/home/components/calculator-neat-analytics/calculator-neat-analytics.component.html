@@ -1,0 +1,177 @@
+<div class="space-y-6">
+
+  <div class="flex items-center gap-3 mb-2">
+    <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 rounded-xl flex items-center justify-center text-lg">
+      <i class="fa-solid fa-calculator"></i>
+    </div>
+    <div>
+      <h3 class="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Calculadora de Metabolismo</h3>
+      <p class="text-[11px] text-gray-400 font-medium">Harris-Benedict — TMB + Factor de Actividad</p>
+    </div>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm p-8">
+  <div class="grid grid-cols-2 gap-4">
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Género</label>
+      <p-select [options]="genderOptions" optionLabel="label" optionValue="value"
+        [ngModel]="gender()" (ngModelChange)="gender.set($event)"
+        placeholder="Selecciona..." appendTo="body" class="w-full"></p-select>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Actividad Semanal</label>
+      <p-select [options]="activityOptions" optionLabel="label" optionValue="value"
+        [ngModel]="activityLevel()" (ngModelChange)="activityLevel.set($event)"
+        placeholder="Selecciona..." appendTo="body" class="w-full"></p-select>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Edad</label>
+      <p-inputNumber [ngModel]="age()" (ngModelChange)="age.set($event)"
+        [min]="14" [max]="100" suffix=" años" placeholder="Ej: 25" class="w-full"></p-inputNumber>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Altura</label>
+      <p-inputNumber [ngModel]="height()" (ngModelChange)="height.set($event)"
+        [min]="100" [max]="250" suffix=" cm" placeholder="Ej: 175" class="w-full"></p-inputNumber>
+      @if (baseHeight()) {
+        <span class="text-[10px] text-gray-400">Base: {{ baseHeight() }} cm</span>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Peso (cálculo)</label>
+      <p-inputNumber [ngModel]="weight()" (ngModelChange)="weight.set($event)"
+        [min]="30" [max]="300" [maxFractionDigits]="1" suffix=" kg" placeholder="Ej: 72" class="w-full"></p-inputNumber>
+      @if (baseWeight()) {
+        <span class="text-[10px] text-gray-400">Base: {{ baseWeight() }} kg</span>
+      }
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Peso Actual</label>
+      <div class="flex items-center h-[42px] px-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        @if (currentWeight()) {
+          <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ currentWeight() }}</span>
+          <span class="text-xs text-gray-400 ml-1">kg</span>
+        } @else {
+          <span class="text-xs text-gray-400 italic">Sin registros</span>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  </div>
+
+
+  @if (tmb() && tdee() && macros()) {
+    <div class="border-t border-gray-100 dark:border-gray-800 pt-5 space-y-4">
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 rounded-2xl p-5 text-center">
+          <p class="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-1">TMB (Reposo)</p>
+          <span class="text-3xl font-black text-amber-700 dark:text-amber-300">{{ tmb() }}</span>
+          <span class="text-xs text-amber-500 ml-1">kcal</span>
+        </div>
+
+        <div class="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-2xl p-5 text-center">
+          <p class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">TDEE (Diario)</p>
+          <span class="text-3xl font-black text-emerald-700 dark:text-emerald-300">{{ tdee() }}</span>
+          <span class="text-xs text-emerald-500 ml-1">kcal</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5">
+        <div class="flex justify-between items-center mb-3">
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Estrategia de Macros (Total: {{ totalPercentage() }}%)</p>
+          @if (totalPercentage() !== 100) {
+            <span class="text-[10px] font-bold text-red-500 animate-pulse">¡Debe sumar 100%!</span>
+          }
+        </div>
+        
+        <!-- Inputs de Porcentajes -->
+        <div class="grid grid-cols-3 gap-40 mb-5 pb-5 mx-20">
+          <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-bold text-blue-500 uppercase">Proteína %</label>
+            <p-inputNumber [ngModel]="pProtein()" (ngModelChange)="pProtein.set($event)"
+              [min]="0" [max]="100" suffix="%" [showButtons]="true" buttonLayout="horizontal"
+              spinnerMode="horizontal" class="p-inputnumber-sm" fluid
+              incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-bold text-amber-500 uppercase">CH %</label>
+            <p-inputNumber [ngModel]="pCarbs()" (ngModelChange)="pCarbs.set($event)"
+              [min]="0" [max]="100" suffix="%" [showButtons]="true" buttonLayout="horizontal"
+              spinnerMode="horizontal" class="p-inputnumber-sm" fluid
+              incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-bold text-red-500 uppercase">Grasa %</label>
+            <p-inputNumber [ngModel]="pFat()" (ngModelChange)="pFat.set($event)"
+              [min]="0" [max]="100" suffix="%" [showButtons]="true" buttonLayout="horizontal"
+              spinnerMode="horizontal" class="p-inputnumber-sm" fluid
+              incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
+          </div>
+        </div>
+
+        <!-- Resultados en Gramos -->
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div class="flex items-baseline justify-center gap-1">
+              <span class="text-2xl font-black text-blue-600 dark:text-blue-400">{{ macros()!.protein }}</span>
+              <span class="text-[14px] text-gray-400">g =</span>
+              <span class="text-1xl font-bold text-blue-400 ml-1">{{ macros()!.proteinPerKg }}g/kg</span>
+            </div>
+            <p class="text-[10px] font-bold text-gray-400 uppercase mt-1">Proteína</p>
+          </div>
+          <div>
+            <span class="text-2xl font-black text-amber-600 dark:text-amber-400">{{ macros()!.carbs }}</span>
+            <span class="text-[10px] text-gray-400 ml-0.5">g</span>
+            <p class="text-[10px] font-bold text-gray-400 uppercase mt-1">Carbohidratos</p>
+          </div>
+          <div>
+            <div class="flex items-baseline justify-center gap-1">
+              <span class="text-2xl font-black text-red-500 dark:text-red-400">{{ macros()!.fat }}</span>
+              <span class="text-[14px] text-gray-400">g =</span>
+              <span class="text-1xl font-bold text-red-400 ml-1">{{ macros()!.fatPerKg }}g/kg</span>
+            </div>
+            <p class="text-[10px] font-bold text-gray-400 uppercase mt-1">Grasas</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 bg-sky-50 dark:bg-sky-900/15 border border-sky-100 dark:border-sky-800/30 rounded-xl p-4">
+        <i class="fa-solid fa-circle-info text-sky-500 mt-0.5"></i>
+        <p class="text-[11px] text-sky-600/80 dark:text-sky-300/60 leading-relaxed">
+          Fórmula de <strong>Harris-Benedict revisada</strong>. El TDEE incluye el factor de actividad seleccionado. 
+          Estos valores son estimaciones — ajustar según respuesta real del cliente.
+        </p>
+      </div>
+
+      <div class="flex justify-end">
+        <p-button 
+          label="Aplicar Macros al Cliente" 
+          icon="pi pi-check" 
+          severity="success" 
+          [loading]="saving()" 
+          (onClick)="applyMacros()"
+          styleClass="w-full sm:w-auto">
+        </p-button>
+      </div>
+
+    </div>
+  } @else {
+    <div class="py-8 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-2xl text-center">
+      <div class="w-14 h-14 bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-700 rounded-full flex items-center justify-center text-2xl mb-3">
+        <i class="fa-solid fa-scale-balanced"></i>
+      </div>
+      <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">Completa todos los campos</p>
+      <p class="text-xs text-gray-400 mt-1">Género, edad, peso, altura y actividad para calcular.</p>
+    </div>
+  }
+
+</div>

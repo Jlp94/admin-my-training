@@ -23,14 +23,26 @@ export class UserService {
     );
   }
 
-  create(payload: Partial<UserInterface>): Observable<User> {
+  create(payload: any): Observable<User> {
     return this.http.post<ApiResponse<UserInterface>>(this.base, payload).pipe(
+      map(response => new User(response.data))
+    );
+  }
+
+  createAdmin(payload: any): Observable<User> {
+    return this.http.post<ApiResponse<UserInterface>>(`${this.base}/admin`, payload).pipe(
       map(response => new User(response.data))
     );
   }
 
   update(id: string, payload: Partial<UserInterface>): Observable<User> {
     return this.http.patch<ApiResponse<UserInterface>>(`${this.base}/${id}`, payload).pipe(
+      map(response => new User(response.data))
+    );
+  }
+
+  updateMacros(id: string, macros: any): Observable<User> {
+    return this.http.patch<ApiResponse<UserInterface>>(`${this.base}/${id}/macros`, macros).pipe(
       map(response => new User(response.data))
     );
   }

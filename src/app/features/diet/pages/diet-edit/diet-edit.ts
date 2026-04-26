@@ -66,6 +66,19 @@ export class DietEdit implements OnInit {
   private readonly formTotals = signal({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
   readonly totals = this.formTotals.asReadonly();
 
+  readonly selectedUserMacros = signal<any>(null);
+
+  private setupUserMacrosListener() {
+    this.dietForm.get('userId')?.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(userId => {
+        if (!userId) { this.selectedUserMacros.set(null); return; }
+        const user = this.users().find(u => u.getId === userId);
+        const macros = user?.getMacros;
+        this.selectedUserMacros.set(macros?.targetKcal ? macros : null);
+      });
+  }
+
   get meals() { return this.dietFormService.getControlArray(this.dietForm, 'meals'); }
 
   getFoodName(id: string): string {
@@ -76,6 +89,7 @@ export class DietEdit implements OnInit {
     this.loadInitialData();
     this.handleRouteParams();
     this.listenToFormChanges();
+    this.setupUserMacrosListener();
   }
 
   private handleRouteParams() {

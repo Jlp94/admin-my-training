@@ -7,11 +7,29 @@
       </div>
       <div>
         <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Gasto Calórico Objetivo</h4>
-        <div class="flex items-baseline gap-2">
-          <span class="text-4xl font-black text-gray-800 dark:text-gray-100">{{ facade.selectedUser()?.getCardioKcalGoal }}</span>
-          <span class="text-xs font-bold text-gray-400 uppercase">Kcal / semana</span>
+        <div class="flex flex-col gap-2">
+          @if (!isEditingGoal()) {
+            <div class="flex items-baseline gap-2">
+              <span class="text-4xl font-black text-gray-800 dark:text-gray-100">{{ facade.selectedUser()?.getCardioKcalGoal }}</span>
+              <span class="text-xs font-bold text-gray-400 uppercase">Kcal / semana</span>
+              <p-button icon="fa-solid fa-pen-to-square" [text]="true" severity="secondary" size="small"
+                        (onClick)="toggleEdit()" pTooltip="Editar objetivo" styleClass="p-0 ml-2"></p-button>
+            </div>
+          } @else {
+            <div class="flex items-center gap-2">
+              <p-inputNumber [ngModel]="cardioKcalGoal()" (ngModelChange)="cardioKcalGoal.set($event)"
+                [min]="0" [max]="10000" [step]="50" suffix=" kcal" placeholder="Ej: 2500"
+                class="w-32" [showButtons]="false" pInputText size="small"></p-inputNumber>
+              <div class="flex gap-1">
+                <p-button icon="pi pi-check" severity="success" [rounded]="true" [text]="true"
+                          [loading]="savingGoal()" (onClick)="saveGoal()"></p-button>
+                <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true"
+                          (onClick)="toggleEdit()"></p-button>
+              </div>
+            </div>
+          }
         </div>
-        <p class="text-[11px] text-gray-400 mt-2 font-medium">Dividido según prefiera el cliente en sesiones de LISS o HIIT.</p>
+        <p class="text-[11px] text-gray-400 mt-1 font-medium italic">Dividido según prefiera el cliente en sesiones de LISS o HIIT.</p>
       </div>
     </div>
 

@@ -140,24 +140,25 @@ export class User {
       return payload;
     }
 
-    const profileBase = {
-      name: formVal.name,
-      lastName: formVal.lastName,
-      height: formVal.height,
-      weight: formVal.weight,
-      notifications: true, 
-      neatLogs: [], 
-      workoutLogs: [],
-      dietLogs: [],
-      favoriteFoods: []
-    };
+    if (formVal.role === 'admin') {
+      return {
+        email: formVal.email,
+        password: formVal.password,
+        name: formVal.name,
+        lastName: formVal.lastName
+      };
+    }
 
     return {
       email: formVal.email,
       password: formVal.password,
-      role: formVal.role,
-      isActive: formVal.isActive,
-      profile: profileBase
+      profile: {
+        name: formVal.name,
+        lastName: formVal.lastName,
+        height: formVal.height,
+        weight: formVal.weight,
+        notifications: true
+      }
     };
   }
 }
