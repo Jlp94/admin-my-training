@@ -11,8 +11,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let errorMessage = 'Ha ocurrido un error inesperado';
 
       if (error.status === 0) {
-        errorMessage = 'No se pudo conectar con el servidor. Por favor, verifica que el backend esté en ejecución.';
-        uiService.showError(errorMessage, 'Conexión Fallida');
+        errorMessage = 'No se pudo conectar con el servidor. Es probable que esté "durmiendo" (Render Cold Start).';
+        uiService.showInfo('Estamos despertando el servidor. Por favor, espera unos 30 segundos y recarga la página.', 'Servidor despertando');
       } 
       else if (error.status >= 500) {
         errorMessage = 'El servidor ha experimentado un error interno. Inténtalo de nuevo más tarde.';

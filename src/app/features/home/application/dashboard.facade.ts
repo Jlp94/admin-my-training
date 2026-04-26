@@ -42,6 +42,11 @@ export class DashboardFacade {
   readonly currentWeekLogs = this.trainingFacade.currentWeekLogs;
   readonly exerciseList = this.trainingFacade.exerciseList;
   readonly exerciseChartData = this.trainingFacade.exerciseChartData;
+  readonly exercisePeriod = this.trainingFacade.exercisePeriod;
+
+  setExercisePeriod(p: 'quarter' | 'all') {
+    this.trainingFacade.setExercisePeriod(p);
+  }
 
   readonly activeTab = signal<string>('training');
   readonly periodOptions = DASHBOARD_PERIOD_OPTIONS;

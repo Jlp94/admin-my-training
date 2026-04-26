@@ -1,6 +1,8 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/my-training/v1',
+    // apiUrl: 'https://api-my-training.onrender.com/my-training/v1',
+
 
     // ─── Auth ───
   auth: {

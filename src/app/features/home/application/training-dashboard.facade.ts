@@ -23,6 +23,7 @@ export class TrainingDashboardFacade {
   readonly exerciseProgression = signal<{ date: string; stats: { kg: number; reps: number; rir: number } }[]>([]);
   readonly selectedExerciseId = signal<string | null>(null);
   readonly loadingExercise = signal(false);
+  readonly exercisePeriod = signal<'quarter' | 'all'>('quarter');
 
   readonly weekSummary = computed(() => {
     const user = this.userFacade.selectedUser();
@@ -67,8 +68,9 @@ export class TrainingDashboardFacade {
 
   readonly exerciseChartData = computed(() => {
     const data = this.exerciseProgression();
+    const period = this.exercisePeriod();
     if (!data.length) return null;
-    return this.dashboardService.buildExerciseChart(data, this.userFacade.period());
+    return this.dashboardService.buildExerciseChart(data, period as any);
   });
 
   selectRoutine(id: string) {
@@ -111,6 +113,12 @@ export class TrainingDashboardFacade {
 
   changeWeek(delta: number) {
     this.weekOffset.update((v) => v + delta);
+    this.loadSessionProgressions();
+  }
+
+  setExercisePeriod(p: 'quarter' | 'all') {
+    this.exercisePeriod.set(p);
+    this.loadSessionProgressions();
   }
 
   clear() {
@@ -154,7 +162,7 @@ export class TrainingDashboardFacade {
           if (res.data.length > 0) {
             charts[res.id] = {
               name: res.name,
-              data: this.dashboardService.buildExerciseChart(res.data, this.userFacade.period()),
+              data: this.dashboardService.buildExerciseChart(res.data, this.exercisePeriod() as any),
             };
           }
         });

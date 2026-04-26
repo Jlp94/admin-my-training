@@ -6,9 +6,6 @@ export class UiService {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
-  /**
-   * Diálogo de confirmación genérico altamente personalizable
-   */
   confirmDialog(options: {
     header: string;
     message: string;
@@ -30,9 +27,6 @@ export class UiService {
     });
   }
 
-  /**
-   * Diálogo específico para eliminaciones (peligro)
-   */
   confirmDelete(itemName: string, onAccept: () => void) {
     this.confirmDialog({
       header: 'Confirmar Eliminación',
@@ -52,11 +46,14 @@ export class UiService {
     this.messageService.add({ severity: 'error', summary, detail, life: 5000 });
   }
 
-  /**
-   * Desplaza la vista a un elemento y aplica un efecto de resaltado temporal
-   * @param elementId ID del elemento en el DOM
-   * @param options Configuración de scroll y selector de resaltado
-   */
+  showInfo(detail: string, summary: string = 'Información') {
+    this.messageService.add({ severity: 'info', summary, detail, life: 5000 });
+  }
+
+  showWarning(detail: string, summary: string = 'Atención') {
+    this.messageService.add({ severity: 'warn', summary, detail, life: 5000 });
+  }
+
   scrollToAndHighlight(
     elementId: string, 
     options: { 
@@ -75,10 +72,8 @@ export class UiService {
       const element = document.getElementById(elementId);
       if (!element) return;
 
-      // Realizar scroll
       element.scrollIntoView({ behavior: 'smooth', block });
 
-      // Aplicar resaltado si se solicita
       const target = highlightSelector 
         ? element.querySelector(highlightSelector) as HTMLElement 
         : element;
