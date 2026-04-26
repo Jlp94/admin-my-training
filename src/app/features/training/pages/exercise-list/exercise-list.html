@@ -96,7 +96,7 @@
 
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-2">
-        <label for="cats" class="font-semibold text-gray-700 dark:text-gray-300">Músculos</label>
+        <label for="cats" class="font-semibold text-gray-700 dark:text-gray-300">Grupo muscular</label>
         <p-multiSelect id="cats" formControlName="categories" [options]="muscleGroupOptions" optionLabel="label" optionValue="value" placeholder="Ej: Pectoral, Tríceps" display="chip" appendTo="body"></p-multiSelect>
       </div>
 
@@ -110,6 +110,7 @@
       <label for="desc" class="font-semibold text-gray-700 dark:text-gray-300">Descripción / Tips de Ejecución</label>
       <textarea pTextarea id="desc" formControlName="description" rows="3" placeholder="Recomendaciones de técnica y postura..."></textarea>
     </div>
+
 
     <div class="flex flex-col gap-2">
       <label for="vid" class="font-semibold text-gray-700 dark:text-gray-300">URL del Vídeo</label>
