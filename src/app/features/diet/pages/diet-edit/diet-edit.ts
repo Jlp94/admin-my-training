@@ -235,7 +235,17 @@ export class DietEdit implements OnInit {
     }
 
     this.saving.set(true);
-    const dietData = this.dietForm.getRawValue();
+    const raw = this.dietForm.getRawValue();
+    const dietData = {
+      ...raw,
+      meals: raw.meals.map((m: any) => ({
+        ...m,
+        foods: m.foods.map((f: any) => {
+          const { nutritionalType, ...rest } = f;
+          return rest;
+        })
+      }))
+    };
     
     const obs = this.dietId() 
       ? this.dietService.update(this.dietId()!, dietData)

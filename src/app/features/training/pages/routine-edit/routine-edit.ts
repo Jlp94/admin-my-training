@@ -234,7 +234,17 @@ export class RoutineEdit implements OnInit {
     }
 
     this.saving.set(true);
-    const payload = this.routineForm.value;
+    const raw = this.routineForm.value;
+    const payload = {
+      ...raw,
+      sessions: raw.sessions.map((s: any) => ({
+        ...s,
+        exercises: s.exercises.map((ex: any) => {
+          const { muscleGroup, ...rest } = ex;
+          return rest;
+        })
+      }))
+    };
 
     if (this.isEditing() && this.routineId()) {
       this.routineService.update(this.routineId()!, payload)
