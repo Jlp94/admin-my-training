@@ -33,7 +33,7 @@ export class DietService {
   }
 
   update(id: string, diet: Partial<Diet>): Observable<Diet> {
-    return this.http.put<ApiResponse<Diet>>(`${this.base}/${id}`, diet).pipe(
+    return this.http.patch<ApiResponse<Diet>>(`${this.base}/${id}`, diet).pipe(
       map(response => response.data)
     );
   }
