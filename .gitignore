@@ -1,20 +1,14 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
 # Compiled output
 /dist
 /tmp
 /out-tsc
 /bazel-out
-/PROJECT_RULES.md
+
 # Node
 /node_modules
 npm-debug.log
+pnpm-debug.log*
 yarn-error.log
-/.claude
-/.gemini
-/.github
-
-
 
 # IDEs and editors
 .idea/
@@ -33,8 +27,11 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-# Miscellaneous
+# Angular cache
+/.angular
 /.angular/cache
+
+# Miscellaneous
 .sass-cache/
 /connect.lock
 /coverage
@@ -50,6 +47,8 @@ src/environments/.env
 # AI and local config
 /.claude
 /.gemini
+/.github
+/.agent
 /PROJECT_RULES.md
 
 # System files
